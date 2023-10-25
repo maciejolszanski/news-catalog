@@ -4,7 +4,10 @@ import scrapy
 
 
 class WPSpider(scrapy.Spider):
+    
     name = "wp_spider"
+    news_class = 'i2PrHTUx'
+    next_page_class = 'i1xRndDA i1ZgYxIQ i2zbd-HY'
 
     # for this url there is a parse method called
     start_urls = [
@@ -12,18 +15,24 @@ class WPSpider(scrapy.Spider):
         ]
 
     def parse(self, response):
-        filename = f"test.html"
-        Path(filename).write_bytes(response.body)
-        self.log(f"Saved file {filename}")
+        
+        news_list = response.xpath(f'//a[@class="{self.news_class}"]')
+        self.log(f"Found newses: {len(news_list)}")
 
-        page_to_follow = response.attrib["href"]
+        for news in news_list:
 
-        #app > div > div > div:nth-child(1) > div.content.i2d9_HLt > div > div > div > div.i3P8PD9G.h1lqk8w > div > div > div.teasersListing.glonews.icT1MaIp.i1pOcmQ4 > div > div > div > div.i2eMLotm.i2bCtMbs.i2SEFzLe.i2N4iaRc.teaserBgColor > div > a
+            link = news.attrib["href"]
+            title = news.attrib["title"]
 
-        # working for specific news
-        # response.xpath('//*[@id="app"]/div/div/div[1]/div[6]/div/div/div/div[2]/div/div/div[1]/div/div/div/div[1]/div/a')
+            yield {"title": title, "link": link}
 
-        #app > div > div > div:nth-child(1) > div.content.i2d9_HLt > div > div > div > div.i3P8PD9G.h1lqk8w > div > div > div.teasersListing.glonews.icT1MaIp.i1pOcmQ4 > div > div > div
+        next_page = response.xpath(f'//a[@class="{self.next_page_class}"]')
+        next_page = next_page.attrib["href"]
 
-        # wroking for all news section
-        # //*[@id="app"]/div/div/div[1]/div[6]/div/div/div/div[2]/div/div/div[1]/div/div/div
+        if next_page is not None:
+
+            page_num = int(next_page.strip('/'))
+            next_page = response.urljoin(next_page)
+
+            if page_num < 3:
+                yield scrapy.Request(next_page, callback=self.parse)
