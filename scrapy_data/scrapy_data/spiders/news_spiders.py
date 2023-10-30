@@ -15,7 +15,7 @@ class WPSpider(scrapy.Spider):
         ]
 
     def parse(self, response):
-        
+        self.log(type(response))
         news_list = response.xpath(f'//a[@class="{self.news_class}"]')
         self.log(f"Found newses: {len(news_list)}")
 
@@ -24,15 +24,32 @@ class WPSpider(scrapy.Spider):
             link = news.attrib["href"]
             title = news.attrib["title"]
 
-            yield {"title": title, "link": link}
+            # yield {"title": title, "link": link}
 
+        # Need to itarate over generator's results
+        next_pages = self._next_page(response)
+        for next_page in next_pages:
+            yield next_page
+
+
+    def _next_page(self, response):
+        """
+        This function calls the next page and calls parse() to process it.
+
+        Args:
+            response (HtmlResponse): Response of HTML GET method on which 
+                                     you want to find next_page button
+
+        Yields:
+            request: 
+        """
+            
         next_page = response.xpath(f'//a[@class="{self.next_page_class}"]')
         next_page = next_page.attrib["href"]
 
         if next_page is not None:
-
             page_num = int(next_page.strip('/'))
             next_page = response.urljoin(next_page)
 
-            if page_num < 3:
+            if page_num < 5:
                 yield scrapy.Request(next_page, callback=self.parse)
