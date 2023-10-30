@@ -6,8 +6,9 @@ import scrapy
 class WPSpider(scrapy.Spider):
     
     name = "wp_spider"
-    news_class = 'i2PrHTUx'
-    next_page_class = 'i1xRndDA i1ZgYxIQ i2zbd-HY'
+    news_class = "i2PrHTUx"
+    next_page_class = "i1xRndDA i1ZgYxIQ i2zbd-HY"
+    article_lead_class = "article--lead i1HGmjUl"
 
     # for this url there is a parse method called
     start_urls = [
@@ -15,7 +16,7 @@ class WPSpider(scrapy.Spider):
         ]
 
     def parse(self, response):
-        self.log(type(response))
+
         news_list = response.xpath(f'//a[@class="{self.news_class}"]')
         self.log(f"Found newses: {len(news_list)}")
 
@@ -24,6 +25,8 @@ class WPSpider(scrapy.Spider):
             link = news.attrib["href"]
             title = news.attrib["title"]
 
+            yield scrapy.Request(response.urljoin(link), callback=self._parse_news_page)
+
             # yield {"title": title, "link": link}
 
         # Need to itarate over generator's results
@@ -31,6 +34,11 @@ class WPSpider(scrapy.Spider):
         for next_page in next_pages:
             yield next_page
 
+    def _parse_news_page(self, response):
+
+        lead = response.xpath(f'//div[@class="{self.article_lead_class}"]/p')
+        lead = lead.xpath("string()").extract()[0]
+        self.log(lead)
 
     def _next_page(self, response):
         """
