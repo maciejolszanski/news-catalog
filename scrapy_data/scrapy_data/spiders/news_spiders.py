@@ -1,13 +1,10 @@
-from pathlib import Path
-
 import scrapy
 
 
 class WPSpider(scrapy.Spider):
-    
+
     name = "wp_spider"
 
-    
     def start_requests(self):
         """This is a function that runs after calling a spider
 
@@ -15,12 +12,14 @@ class WPSpider(scrapy.Spider):
             AttributeError: Raised if there is no CSS classes prefix defined
                             during spider call.
         """
+
         url = "https://wiadomosci.wp.pl"
 
         prefix = getattr(self, "prefix", None)
         if prefix is None:
-            raise AttributeError("No CSS classes prefix found ",
-                    "add prefix to your command like: prefix=<value e.g. i>")
+            raise AttributeError("No CSS classes prefix found " +
+                                 "add prefix to your command like: " +
+                                 "prefix=<value e.g. i>")
         else:
             self.set_css_classes(prefix)
 
@@ -42,14 +41,20 @@ class WPSpider(scrapy.Spider):
         self.article_lead_class = f"article--lead {class_prefix}1HGmjUl"
         self.article_text_class = (f"article--text {class_prefix}FQN8OU2 " +
                                    f"{class_prefix}YwaUr3X")
-        self.author_class = (f"signature--author {class_prefix}2aU53vl " + 
-                              "desktop")
+        self.author_class = (f"signature--author {class_prefix}2aU53vl " +
+                             "desktop")
         self.date_class = (f"signature--when {class_prefix}2VIX-Kh " +
-                            "desktop")
-
+                           "desktop")
 
     def parse_articles_listing(self, response):
+        """
+        Function to parse list of articles webpage. It should be used to parse
+        a webpage that contains a list of articles, not one specific article.
 
+        Args:
+            response (HtmlResponse): Response of HTML GET method which
+                                     you want to parse.
+        """
         article_list = response.xpath(f'//a[@class="{self.article_class}"]')
         self.log(f"Found articles: {len(article_list)}")
 
@@ -67,19 +72,31 @@ class WPSpider(scrapy.Spider):
             yield next_page
 
     def _parse_article_page(self, response, url):
+        """
+        Function to parse specific article webpage. It should be used to parse
+        a webpage that contains one specific article, not a list of articles.
 
-        lead = self.extract_div_text(response, self.article_lead_class, "div", "p")
-        article_text = self.extract_div_text(response, self.article_text_class, "div", "p")
-        author_raw = self.extract_div_text(response, self.author_class, "span")
-        date_raw = self.extract_div_text(response, self.date_class, "div", "span")
-        
+        Args:
+            response (HtmlResponse): Response of HTML GET method which
+                                     you want to parse.
+        """
+
+        lead = self.extract_html_text(
+            response, self.article_lead_class, "div", "p")
+        article_text = self.extract_html_text(
+            response, self.article_text_class, "div", "p")
+        author_raw = self.extract_html_text(
+            response, self.author_class, "span")
+        date_raw = self.extract_html_text(
+            response, self.date_class, "div", "span")
+
         # Getting rid of a prefix to author name that sometimes exists
         author = author_raw.lstrip("oprac.")
 
         # Getting rid of "Today" etc. prefix
         date = ' '.join(date_raw.split(' ')[-2:])
 
-        yield {
+        article_dict = {
             'date': date,
             'author': author,
             'lead': lead,
@@ -87,36 +104,53 @@ class WPSpider(scrapy.Spider):
             'url': url
         }
 
+        yield article_dict
 
-    def extract_div_text(self, response, css_class, xpath_first_node,
-                         xpath_second_node=None):
+    def extract_html_text(self, response, css_class, xpath_first_node,
+                          xpath_second_node=None):
         """
-        This function extract text from a list of 
+        This function extract text from a list of HTML nodes defined by
+        first and second node. The xpath construction is as follows:
+
+        //xpath_first_node[@class="css_class"]/xpath_second_node
+
+        so if your xpath looks like this:
+
+        //div[@class="title"]/p
+
+        You should pass following arguments:
+            css_class = "title"
+            xpath_first_node = "div"
+            xpath_second_node = "p"
 
         Args:
             response (HtmlResponse): Response of HTML GET method from which
                                      you want to extract text from.
-            css_class (str): CSS selector of divs you want to extract text 
-                             from.  
-            css_class (str): CSS selector of divs you want to extract text 
-                             from.  
-            css_class (str): CSS selector of divs you want to extract text 
-                             from.  
+            css_class (str): CSS selector of nodxpath_first_nodees you want to
+                             extract text from.
+            xpath_first_node (str): First CSS selector of nodes you want to
+                                    extract text from.
+            xpath_second_node (str): Second CSS selector of nodes you want to
+                                     extract text from.
 
         Returns:
-            full_text (str): Text from all divs joine into one string.
+            full_text (str): Text from all nodes joined into one string.
         """
+
         if xpath_second_node is None:
             xpath_second_node = ""
         else:
             xpath_second_node = "/" + xpath_second_node
-        response_elems = response.xpath(f'//{xpath_first_node}[@class="{css_class}"]{xpath_second_node}')
-        
+
+        response_elems = response.xpath(f'//{xpath_first_node}' +
+                                        f'[@class="{css_class}"]' +
+                                        f'{xpath_second_node}')
+
         texts = []
         for elem in response_elems:
             elem_text = elem.xpath("string()").extract()[0]
             texts.append(elem_text)
-        
+
         full_text = ' '.join(texts)
 
         return full_text
@@ -126,14 +160,12 @@ class WPSpider(scrapy.Spider):
         This function calls the next page and calls parse() to process it.
 
         Args:
-            response (HtmlResponse): Response of HTML GET method on which 
+            response (HtmlResponse): Response of HTML GET method on which
                                      you want to find next_page button
-
-        Yields:
-            request: 
         """
-            
-        next_page_selector = response.xpath(f'//a[@class="{self.next_page_class}"]')
+
+        next_page_selector = response.xpath('//a[@class=' +
+                                            f'"{self.next_page_class}"]')
 
         for next_page in next_page_selector:
             next_page = next_page.attrib["href"]
@@ -144,5 +176,3 @@ class WPSpider(scrapy.Spider):
 
                 if page_num < 1:
                     yield scrapy.Request(next_page, callback=self.parse)
-
-        
