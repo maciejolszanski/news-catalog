@@ -10,4 +10,6 @@ if __name__ == "__main__":
     spider_name = "wp_spider"
     parent_dir = os.getcwd()
     scrapy_path = os.path.join(parent_dir, "scrapy_data")
-    subprocess.run(["scrapy", "crawl", spider_name, "-O", "test.jsonl"], cwd=scrapy_path)
+    scrapy_comamnnd = ["scrapy", "crawl", spider_name, "-O",
+                       "test.jsonl", "-a", "prefix=j"]
+    subprocess.run(scrapy_comamnnd, cwd=scrapy_path)

@@ -6,19 +6,41 @@ import scrapy
 class WPSpider(scrapy.Spider):
     
     name = "wp_spider"
-    news_class = "i2PrHTUx"
-    next_page_class = "i1xRndDA i1ZgYxIQ i2zbd-HY"
-    article_lead_class = "article--lead i1HGmjUl"
+
 
     # for this url there is a parse method called
-    start_urls = [
-            "https://wiadomosci.wp.pl",
-        ]
+    # start_urls = [
+    #         "https://wiadomosci.wp.pl",
+    #     ]
+    
+    def start_requests(self):
+        url = "https://wiadomosci.wp.pl"
+        prefix = getattr(self, "prefix", None)
+        if prefix is None:
+            raise Exception("You need to pass a tag: prefix to classes.\n",
+                            "To do it add prefix=<value e.g. i>")
+        else:
+            self.set_css_classes(prefix)
+        yield scrapy.Request(url, self.parse)
+
+    def set_css_classes(self, class_prefix):
+        """
+        WP webpage
+
+        Args:
+            prefix (_type_): _description_
+        """
+
+        self.news_class = f"{class_prefix}2PrHTUx"
+        self.next_page_class = f"{class_prefix}1xRndDA {class_prefix}1ZgYxIQ {class_prefix}2zbd-HY"
+        self.article_lead_class = f"article--lead {class_prefix}1HGmjUl"
+
 
     def parse(self, response):
 
         news_list = response.xpath(f'//a[@class="{self.news_class}"]')
         self.log(f"Found newses: {len(news_list)}")
+        self.log(self.prefix)
 
         for news in news_list:
 
@@ -52,12 +74,16 @@ class WPSpider(scrapy.Spider):
             request: 
         """
             
-        next_page = response.xpath(f'//a[@class="{self.next_page_class}"]')
-        next_page = next_page.attrib["href"]
+        next_page_selector = response.xpath(f'//a[@class="{self.next_page_class}"]')
 
-        if next_page is not None:
-            page_num = int(next_page.strip('/'))
-            next_page = response.urljoin(next_page)
+        for next_page in next_page_selector:
+            next_page = next_page.attrib["href"]
 
-            if page_num < 5:
-                yield scrapy.Request(next_page, callback=self.parse)
+            if next_page is not None:
+                page_num = int(next_page.strip('/'))
+                next_page = response.urljoin(next_page)
+
+                if page_num < 5:
+                    yield scrapy.Request(next_page, callback=self.parse)
+
+        
