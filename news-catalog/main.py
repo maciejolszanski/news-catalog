@@ -9,9 +9,12 @@ import os
 
 if __name__ == "__main__":
 
-    spider_name = "wp_spider"
+    spiders_to_run = ["wp_spider"]
     parent_dir = os.getcwd()
     scrapy_path = os.path.join(parent_dir, "scrapy_project")
-    scrapy_comamnnd = ["scrapy", "crawl", spider_name, "-O",
-                       "test.jsonl", "-a", "prefix=j"]
-    subprocess.run(scrapy_comamnnd, cwd=scrapy_path)
+    css_prefix = 'j'
+
+    for spider in spiders_to_run:
+        scrapy_comamnnd = ["scrapy", "crawl", spider, "-O",
+                           "test.jsonl", "-a", f"prefix={css_prefix}"]
+        subprocess.run(scrapy_comamnnd, cwd=scrapy_path)
