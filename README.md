@@ -8,4 +8,5 @@ rubbish articles. Thanks to it you will be able to read all news
 1. Clone this repository: `git clone https://github.com/maciejolszanski/news-catalog.git` 
 2. Create Python environment: `python -m venv <env name>`
 3. Install requirements: `pip install -r requirements.txt`
-4. Start webscraping: `python .\news-catalog\main.py` from main project directory
+4. Install MongoDB: https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-windows/#std-label-install-mdb-community-windows
+5. Start webscraping: `python .\news-catalog\main.py` from main project directory
