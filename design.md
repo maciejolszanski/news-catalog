@@ -14,33 +14,4 @@ Gitflow will be used. Main branch contains only released code. Develop branch co
 
 ## Technologies used
 Main app language is Python. Data are scraped using scrapy module. Data are stored as MondoDB documents. App UI is created in Python as Desktop app.
-
-## Project structure
-```
-└── news-catalog
-  ├── .config 
-  ├── build 
-  ├── doc
-  ├── res
-  ├── src
-  ├── test
-  ├── tools
-  ├── requirements.txt
-  ├── README.md
-  └── LICENSE
-```
-`.config` - local configuration related to setup on local machine
-
-`build` - scripts related to build process (Powershell, Docker compose, ...)
-
-`doc` - documentation
-
-`res` - static resources (images etc.)
-
-`tools` - scripts to automate tasks in the project - build scripts, rename scripts
-
-`src` - source code
-
-`test` - unit tests, integration tests
-
    
