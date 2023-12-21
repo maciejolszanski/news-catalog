@@ -20,20 +20,18 @@ Main app language is Python. Data are scraped using scrapy module. Data are stor
 └── news-catalog
   ├── .config 
   ├── build 
-  ├── dep
   ├── doc
   ├── res
   ├── src
   ├── test
   ├── tools
+  ├── requirements.txt
   ├── README.md
   └── LICENSE
 ```
 `.config` - local configuration related to setup on local machine
 
 `build` - scripts related to build process (Powershell, Docker compose, ...)
-
-`dep` - dependecies
 
 `doc` - documentation
 
