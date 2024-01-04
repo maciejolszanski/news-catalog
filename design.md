@@ -25,9 +25,10 @@ Tasks:
 
 ## UI - Streamlit - [example](https://docs.streamlit.io/knowledge-base/tutorials/databases/mongodb)
 Tasks:
-1. Add mongoDB secrets to Streamlit `secrets.toml` and add it to .gitignore
-2. Copy app secrets to the cloud
-3. Create Streamlit app to display Newses:
+1. Create "hello world" Streamlit app
+2. Add mongoDB secrets to Streamlit `secrets.toml` and add it to .gitignore
+3. Copy app secrets to the cloud
+4. Update Streamlit app to display Newses:
    * Filtering newses (date, author, webiste, tags)
    * Possibility to mark news as interesting/not interesting
 
