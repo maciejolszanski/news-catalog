@@ -1,5 +1,6 @@
 import scrapy
 
+from scrapy_project.items import WPArticle
 
 class WPSpider(scrapy.Spider):
 
@@ -95,14 +96,13 @@ class WPSpider(scrapy.Spider):
 
         # Getting rid of "Today" etc. prefix
         date = ' '.join(date_raw.split(' ')[-2:])
-
-        article_dict = {
-            'date': date,
-            'author': author,
-            'lead': lead,
-            'text': article_text,
-            'url': url
-        }
+        
+        article_dict = WPArticle()
+        article_dict["date"] = date
+        article_dict["author"] = author
+        article_dict["lead"] = lead
+        article_dict["text"] = article_text
+        article_dict["url"] = url
 
         yield article_dict
 
