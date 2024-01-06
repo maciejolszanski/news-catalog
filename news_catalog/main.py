@@ -12,7 +12,7 @@ if __name__ == "__main__":
 
     spiders_to_run = ["wp_spider"]
     parent_dir = os.getcwd()
-    scrapy_path = os.path.join(parent_dir, "scrapy_project")
+    scrapy_path = os.path.join("news_catalog","scrapy_project")
 
     wp_checks = WpChecks()
     css_prefix = wp_checks.get_css_prefix()
