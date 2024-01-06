@@ -1,5 +1,6 @@
 import scrapy
 
+from scrapy_project.items import WPArticle
 
 class WPSpider(scrapy.Spider):
 
@@ -38,6 +39,7 @@ class WPSpider(scrapy.Spider):
         self.next_page_class = (f"{class_prefix}1xRndDA " +
                                 f"{class_prefix}1ZgYxIQ " +
                                 f"{class_prefix}2zbd-HY")
+        self.article_title_class = f"article--title {class_prefix}1xAmRvR"
         self.article_lead_class = f"article--lead {class_prefix}1HGmjUl"
         self.article_text_class = (f"article--text {class_prefix}FQN8OU2 " +
                                    f"{class_prefix}YwaUr3X")
@@ -80,7 +82,8 @@ class WPSpider(scrapy.Spider):
             response (HtmlResponse): Response of HTML GET method which
                                      you want to parse.
         """
-
+        title = self.extract_html_text(
+            response, self.article_title_class, "h1")
         lead = self.extract_html_text(
             response, self.article_lead_class, "div", "p")
         article_text = self.extract_html_text(
@@ -95,14 +98,14 @@ class WPSpider(scrapy.Spider):
 
         # Getting rid of "Today" etc. prefix
         date = ' '.join(date_raw.split(' ')[-2:])
-
-        article_dict = {
-            'date': date,
-            'author': author,
-            'lead': lead,
-            'text': article_text,
-            'url': url
-        }
+        
+        article_dict = WPArticle()
+        article_dict["title"] = title
+        article_dict["date"] = date
+        article_dict["author"] = author
+        article_dict["lead"] = lead
+        article_dict["text"] = article_text
+        article_dict["url"] = url
 
         yield article_dict
 
