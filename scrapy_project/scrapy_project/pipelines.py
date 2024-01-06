@@ -7,8 +7,8 @@ import pymongo
 import logging
 
 from scrapy.exceptions import DropItem
-from scrapy import settings
-
+from news_catalog.mongoDB_handler import mongoDB_handler
+# from test_dir import test
 
 class NewsReaderPipeline(object):
 
@@ -27,12 +27,7 @@ class NewsReaderPipeline(object):
     
     def __init__(self, mongoDB_settings):
         settings = mongoDB_settings
-        connection = pymongo.MongoClient(
-            settings['server'],
-            settings['port']
-        )
-        db = connection[settings['db']]
-        self.collection = db[settings['collection']]
+        self.collection = mongoDB_handler(mongoDB_settings=settings)
 
     def process_item(self, item, spider):
         valid = True
