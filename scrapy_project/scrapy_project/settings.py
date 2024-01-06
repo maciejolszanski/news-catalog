@@ -91,3 +91,11 @@ DOWNLOAD_DELAY = 0.2
 REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
+
+# MongoDB Parameters
+ITEM_PIPELINES = ['stack.pipelines.MongoDBPipeline', ]
+
+MONGODB_SERVER = "localhost"
+MONGODB_PORT = 27017
+MONGODB_DB = "news-catalog"
+MONGODB_COLLECTION = "newses"
