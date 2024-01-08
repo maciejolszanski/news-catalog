@@ -1,6 +1,6 @@
 import scrapy
 
-from scrapy_project.items import WPArticle
+from scrapy_project.scrapy_project.items import WPArticle
 
 class WPSpider(scrapy.Spider):
 
