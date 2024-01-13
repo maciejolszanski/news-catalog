@@ -7,7 +7,6 @@ from scrapy.item import Item, Field
 
 
 class WPArticle(Item):
-    
     title = Field()
     date = Field()
     author = Field()
