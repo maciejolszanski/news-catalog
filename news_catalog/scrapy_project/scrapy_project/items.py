@@ -14,7 +14,3 @@ class WPArticle(Item):
     lead = Field()
     text = Field()
     url = Field()
-
-    def __repr__(self):
-        """only print out attr1 after exiting the Pipeline"""
-        return ""

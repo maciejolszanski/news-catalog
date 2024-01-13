@@ -3,10 +3,6 @@
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 
-import pymongo
-import logging
-
-from scrapy.exceptions import DropItem
 from mongoDB_handler import mongoDB_handler
 
 class NewsReaderPipeline(object):
@@ -28,9 +24,6 @@ class NewsReaderPipeline(object):
         settings = mongoDB_settings
         self.collection = mongoDB_handler(mongoDB_settings=settings)
 
-    def process_item(self, item, spider):
-        valid = True
-        if valid:
-            self.collection.insert(dict(item))
-
+    def process_item(self, item):
+        self.collection.insert(dict(item))
         return item

@@ -24,4 +24,3 @@ class mongoDB_handler():
             self.collection.insert_many(data)
         elif type(data) == dict:
             self.collection.insert_one(data)
-    
