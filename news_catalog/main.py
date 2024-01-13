@@ -3,13 +3,19 @@ This file contains logic of application
 """
 
 from website_connection_checks import WpChecks
-
 from scrapy.crawler import CrawlerProcess
-
 from scrapy_project.scrapy_project.spiders.news_spiders import WPSpider
 
 
 def run_spider(prefix):
+    """
+    Function call scrapy spider that scrapes WP articles and saves data
+    to MongoDB database.
+
+    Args:
+        prefix (str): css_prefix that will be used by a spider to define
+                      proper css clasess.
+    """
     settings = {
         "ITEM_PIPELINES": {
             "scrapy_project.scrapy_project.pipelines.NewsReaderPipeline": 100

@@ -7,6 +7,17 @@ from pymongo import MongoClient
 
 class mongoDB_handler:
     def __init__(self, mongoDB_settings):
+        """
+        Initalize database connetion
+
+        Args:
+            mongoDB_settings (dict): Settings that enable database connection.
+                                     Required keys are:
+                                        - server
+                                        - port
+                                        - db
+                                        - collection
+        """
         address = mongoDB_settings["server"]
         port = mongoDB_settings["port"]
         db_name = mongoDB_settings["db"]
@@ -17,6 +28,12 @@ class mongoDB_handler:
         self.collection = self.db[collection_name]
 
     def insert(self, data):
+        """
+        Function inserts data to mongoDB collection.
+
+        Args:
+            data (list/dict): Data that are going to be inserted to collection.
+        """
         if data.isintance(list):
             self.collection.insert_many(data)
         elif data.isintance(dict):
