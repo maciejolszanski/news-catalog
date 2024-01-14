@@ -108,7 +108,7 @@ class WPSpider(scrapy.Spider):
         author = author_raw.lstrip("oprac.")
 
         # Getting rid of "Today" etc. prefix
-        date = " ".join(date_raw.split(" ")[-2:])
+        date = " ".join(date_raw.split(" ")[-2:-1])
 
         article_dict = WPArticle()
         article_dict["title"] = title
