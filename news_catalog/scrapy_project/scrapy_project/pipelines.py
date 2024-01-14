@@ -26,6 +26,9 @@ class NewsReaderPipeline(object):
         settings = mongoDB_settings
         self.collection = mongoDB_handler(mongoDB_settings=settings)
 
-    def process_item(self, item):
+    def process_item(self, item, spider):
         self.collection.insert(dict(item))
         return item
+
+    def close_spider(self, spider):
+        self.collection.drop_duplicates(["title", "date"])

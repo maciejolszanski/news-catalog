@@ -34,7 +34,33 @@ class mongoDB_handler:
         Args:
             data (list/dict): Data that are going to be inserted to collection.
         """
-        if data.isintance(list):
+        if isinstance(data, list):
             self.collection.insert_many(data)
-        elif data.isintance(dict):
+        elif isinstance(data, dict):
             self.collection.insert_one(data)
+
+    def drop_duplicates(self, unique_keys):
+        """
+        Function removes duplicates from collection considering only keys
+        that should be unique.
+
+        Args:
+            unique_keys (list): Keys that should be unique in collection
+        """
+        duplicate_documents = self.collection.aggregate(
+            [
+                {
+                    "$group": {
+                        "_id": {key: f"${key}" for key in unique_keys},
+                        "duplicates": {"$push": "$_id"},
+                        "count": {"$sum": 1},
+                    }
+                },
+                {"$match": {"count": {"$gt": 1}}},
+            ]
+        )
+
+        for duplicate_group in duplicate_documents:
+            # Keep one document (first one in the list) and delete the rest
+            documents_to_delete = duplicate_group["duplicates"][1:]
+            self.collection.delete_many({"_id": {"$in": documents_to_delete}})
