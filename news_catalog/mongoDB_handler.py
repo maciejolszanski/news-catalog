@@ -47,7 +47,6 @@ class mongoDB_handler:
         Args:
             unique_keys (list): Keys that should be unique in collection
         """
-
         duplicate_documents = self.collection.aggregate(
             [
                 {
