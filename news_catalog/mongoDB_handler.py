@@ -27,6 +27,9 @@ class mongoDB_handler:
         self.db = self.client[db_name]
         self.collection = self.db[collection_name]
 
+    def __str__(self):
+        print(self.db)
+
     def insert(self, data):
         """
         Function inserts data to mongoDB collection.
