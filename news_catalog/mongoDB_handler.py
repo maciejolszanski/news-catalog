@@ -67,3 +67,14 @@ class mongoDB_handler:
             # Keep one document (first one in the list) and delete the rest
             documents_to_delete = duplicate_group["duplicates"][1:]
             self.collection.delete_many({"_id": {"$in": documents_to_delete}})
+
+    def get_data(self):
+        """
+        Function returns all items stored in MongoDB collection.
+
+        Returns:
+            items (list): List of items stored in MongoDB collection.
+        """
+
+        items = self.collection.find()
+        return list(items)
