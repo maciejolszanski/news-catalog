@@ -51,4 +51,4 @@ if __name__ == "__main__":
     css_prefix = wp_checks.get_css_prefix()
 
     run_spider(css_prefix)
-    run_streamlit_app()
+    # run_streamlit_app()

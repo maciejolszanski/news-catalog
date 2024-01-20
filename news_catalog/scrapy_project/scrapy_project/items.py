@@ -13,3 +13,6 @@ class WPArticle(Item):
     lead = Field()
     text = Field()
     url = Field()
+
+    def __repr__(self):
+        return repr("")

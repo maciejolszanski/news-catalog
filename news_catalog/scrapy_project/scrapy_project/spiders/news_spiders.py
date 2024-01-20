@@ -77,7 +77,9 @@ class WPSpider(scrapy.Spider):
         # Need to itarate over generator's results
         next_pages = self._next_page(response)
         for next_page in next_pages:
-            yield next_page
+            yield scrapy.Request(
+                next_page, callback=self.parse_articles_listing
+            )
 
     def _parse_article_page(self, response, url):
         """
@@ -193,5 +195,10 @@ class WPSpider(scrapy.Spider):
                 page_num = int(next_page.strip("/"))
                 next_page = response.urljoin(next_page)
 
-                if page_num < 1:
-                    yield scrapy.Request(next_page, callback=self.parse)
+                print(page_num)
+                if page_num < 3:
+                    print("aaa")
+                    print(next_page)
+                    # yield scrapy.Request(
+                    #     next_page, callback=self.parse_articles_listing)
+                    return next_page
