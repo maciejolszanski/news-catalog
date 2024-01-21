@@ -195,10 +195,5 @@ class WPSpider(scrapy.Spider):
                 page_num = int(next_page.strip("/"))
                 next_page = response.urljoin(next_page)
 
-                print(page_num)
-                if page_num < 3:
-                    print("aaa")
-                    print(next_page)
-                    # yield scrapy.Request(
-                    #     next_page, callback=self.parse_articles_listing)
-                    return next_page
+                if page_num < 10:
+                    yield next_page
