@@ -2,7 +2,6 @@ import streamlit as st
 from mongoDB_handler import mongoDB_handler
 import pandas as pd
 
-st.set_page_config(layout="wide")
 
 def dataframe_with_selections(df, config):
     df_with_selections = df.copy()
@@ -37,7 +36,6 @@ items = mongodb.get_data()
 
 df = pd.DataFrame(items, index=list(range(len(items))))
 
-# display without id
 column_config = {
     "_id": None,
     "title": "Article title",
@@ -46,6 +44,13 @@ column_config = {
     "text": None,
     "author": "Author",
     "url": None,
+    "Read": st.column_config.CheckboxColumn(required=True),
 }
 
-st.dataframe(df, column_config=column_config)
+selected_articles = dataframe_with_selections(df, column_config)
+
+for article in selected_articles.values():
+    st.header(article["title"])
+    st.caption(f"{article['author']}, {article['date']}")
+    st.write(article["lead"])
+    st.write(article["text"])
