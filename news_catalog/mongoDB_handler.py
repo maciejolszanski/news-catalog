@@ -78,3 +78,16 @@ class mongoDB_handler:
 
         items = self.collection.find()
         return list(items)
+
+    def get_max_date(self):
+        """
+        Function returns max date from collection.
+
+        Returns:
+            max_date (str): Max date from MongoDB collection.
+        """
+        pipeline = [{"$group": {"_id": None, "maxDate": {"$max": "$date"}}}]
+
+        max_date = list(self.collection.aggregate(pipeline))[0]["maxDate"]
+
+        return max_date
