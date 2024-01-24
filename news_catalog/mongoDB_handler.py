@@ -3,6 +3,7 @@ This file contains class that copes with MongoDB
 """
 
 from pymongo import MongoClient
+import datetime as dt
 
 
 class mongoDB_handler:
@@ -88,6 +89,11 @@ class mongoDB_handler:
         """
         pipeline = [{"$group": {"_id": None, "maxDate": {"$max": "$date"}}}]
 
-        max_date = list(self.collection.aggregate(pipeline))[0]["maxDate"]
+        try:
+            max_date = list(self.collection.aggregate(pipeline))[0]["maxDate"]
+        except:
+            # If there is no records in collection
+            max_date = dt.datetime.now() - dt.timedelta(days=2)
+            max_date = max_date.strftime("%d-%m-%Y")
 
         return max_date
