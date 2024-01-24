@@ -12,5 +12,6 @@ rubbish articles. Thanks to it you will be able to read all news
 
 
 # Run app:
-1. Run webscraping: `python .\news-catalog\main.py` from main project directory
-2. Open Streamlit app: `streamlit run news_catalog\streamlit_project\streamlit_main.py `
+1. Run app: `python .\news-catalog\main.py` from main project directory
+2. At first the webscraping will be run.
+3. Then the Streamlit app will be opened in your default bowser.
