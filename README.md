@@ -9,4 +9,9 @@ rubbish articles. Thanks to it you will be able to read all news
 2. Create Python environment: `python -m venv <env name>`
 3. Install requirements: `pip install -r requirements.txt`
 4. Install MongoDB: https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-windows/#std-label-install-mdb-community-windows
-5. Start webscraping: `python .\news-catalog\main.py` from main project directory
+
+
+# Run app:
+1. Run app: `python .\news-catalog\main.py` from main project directory
+2. At first the webscraping will be run.
+3. Then the Streamlit app will be opened in your default bowser.

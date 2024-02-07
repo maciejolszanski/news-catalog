@@ -1,5 +1,5 @@
 import scrapy
-
+from scrapy.exceptions import CloseSpider
 from scrapy_project.scrapy_project.items import WPArticle
 
 
@@ -77,7 +77,9 @@ class WPSpider(scrapy.Spider):
         # Need to itarate over generator's results
         next_pages = self._next_page(response)
         for next_page in next_pages:
-            yield next_page
+            yield scrapy.Request(
+                next_page, callback=self.parse_articles_listing
+            )
 
     def _parse_article_page(self, response, url):
         """
@@ -110,6 +112,11 @@ class WPSpider(scrapy.Spider):
         # Getting rid of "Today" etc. prefix
 
         date = " ".join(date_raw.split(" ")[-2:-1])
+
+        # Stopping crawling if the scraped article is older than the articles
+        # from previous scraping
+        if date and date < self.last_scraped_date:
+            raise CloseSpider("Stopped Scraping due to exceeding watermark!")
 
         article_dict = WPArticle()
         article_dict["title"] = title
@@ -190,8 +197,8 @@ class WPSpider(scrapy.Spider):
             next_page = next_page.attrib["href"]
 
             if next_page is not None:
-                page_num = int(next_page.strip("/"))
                 next_page = response.urljoin(next_page)
+                yield next_page
 
-                if page_num < 1:
-                    yield scrapy.Request(next_page, callback=self.parse)
+    def set_last_scraped_date(self, date):
+        self.last_scraped_date = date

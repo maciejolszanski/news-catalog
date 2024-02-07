@@ -6,6 +6,9 @@ from website_connection_checks import WpChecks
 from scrapy.crawler import CrawlerProcess
 from scrapy_project.scrapy_project.spiders.news_spiders import WPSpider
 
+import sys
+from streamlit.web import cli as stcli
+
 
 def run_spider(prefix):
     """
@@ -34,8 +37,18 @@ def run_spider(prefix):
     process.start()
 
 
+def run_streamlit_app():
+    sys.argv = [
+        "streamlit",
+        "run",
+        r"news_catalog\streamlit_project\streamlit_main.py",
+    ]
+    sys.exit(stcli.main())
+
+
 if __name__ == "__main__":
     wp_checks = WpChecks()
     css_prefix = wp_checks.get_css_prefix()
 
     run_spider(css_prefix)
+    run_streamlit_app()

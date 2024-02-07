@@ -4,6 +4,8 @@
 # See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 
 from mongoDB_handler import mongoDB_handler
+from itemadapter import ItemAdapter
+from scrapy.exceptions import DropItem
 
 
 class NewsReaderPipeline(object):
@@ -24,11 +26,26 @@ class NewsReaderPipeline(object):
 
     def __init__(self, mongoDB_settings):
         settings = mongoDB_settings
-        self.collection = mongoDB_handler(mongoDB_settings=settings)
+        self.mongodb = mongoDB_handler(mongoDB_settings=settings)
+
+    def open_spider(self, spider):
+        latest_date = self.mongodb.get_max_date()
+        spider.set_last_scraped_date(latest_date)
 
     def process_item(self, item, spider):
-        self.collection.insert(dict(item))
-        return item
+        adapter = ItemAdapter(item)
+        required_keys = ["title", "text", "date"]
+        missing_keys = []
+
+        for key in required_keys:
+            if not adapter.get(key):
+                missing_keys.append(key)
+
+        if missing_keys:
+            raise DropItem(f"Missing {missing_keys} in {item}")
+        else:
+            self.mongodb.insert(dict(item))
+            return item
 
     def close_spider(self, spider):
-        self.collection.drop_duplicates(["title", "date"])
+        self.mongodb.drop_duplicates(["title", "date"])
