@@ -109,9 +109,7 @@ class WPSpider(scrapy.Spider):
         # Getting rid of a prefix to author name that sometimes exists
         author = author_raw.lstrip("oprac.")
 
-        # Getting rid of "Today" etc. prefix
-
-        date = " ".join(date_raw.split(" ")[-2:-1])
+        date = self.format_date(date_raw)
 
         # Stopping crawling if the scraped article is older than the articles
         # from previous scraping
@@ -127,6 +125,15 @@ class WPSpider(scrapy.Spider):
         article_dict["url"] = url
 
         yield article_dict
+
+    def format_date(self, date_raw):
+        # Getting rid of "Today" etc. prefix
+        date_elems = date_raw.split(" ")[-2:-1]
+
+        # Changing from dd-mm-yyyy to yyyy-mm-dd
+        date = " ".join(reversed(date_elems))
+
+        return date
 
     def extract_html_text(
         self, response, css_class, xpath_first_node, xpath_second_node=None

@@ -6,7 +6,7 @@ from pymongo import MongoClient
 import datetime as dt
 
 
-class mongoDB_handler:
+class MongoDBHandler:
     def __init__(self, mongoDB_settings):
         """
         Initalize database connetion
@@ -89,11 +89,10 @@ class mongoDB_handler:
         """
         pipeline = [{"$group": {"_id": None, "maxDate": {"$max": "$date"}}}]
 
-        try:
-            max_date = list(self.collection.aggregate(pipeline))[0]["maxDate"]
-        except:
-            # If there is no records in collection
+        max_date = list(self.collection.aggregate(pipeline))[0]["maxDate"]
+
+        if max_date is None:
             max_date = dt.datetime.now() - dt.timedelta(days=2)
-            max_date = max_date.strftime("%d-%m-%Y")
+            max_date = max_date.strftime("%Y-%m-%d")
 
         return max_date

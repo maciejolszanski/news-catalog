@@ -1,5 +1,5 @@
 import streamlit as st
-from mongoDB_handler import mongoDB_handler
+from mongoDB_handler import MongoDBHandler
 import pandas as pd
 
 
@@ -31,7 +31,7 @@ st.set_page_config(
 st.title(":book: News Catalog")
 
 settings = st.secrets["mongo"]
-mongodb = mongoDB_handler(mongoDB_settings=settings)
+mongodb = MongoDBHandler(mongoDB_settings=settings)
 items = mongodb.get_data()
 
 df = pd.DataFrame(items, index=list(range(len(items))))
