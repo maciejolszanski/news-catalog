@@ -1,15 +1,7 @@
-import sys
-import os
-
-# Add the project root directory to the Python path
-cwd = os.getcwd()
-root_module_path = os.path.abspath(os.path.join(cwd, os.pardir))
-sys.path.append(root_module_path)
-
 import pytest
-from mongoDB_handler import MongoDBHandler
 import mongomock
 from freezegun import freeze_time
+from news_catalog.mongoDB_handler import MongoDBHandler
 
 
 class MockMongoDBHandler(MongoDBHandler):

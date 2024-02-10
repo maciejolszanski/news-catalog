@@ -1,14 +1,6 @@
-import sys
-import os
-
-# Add the project root directory to the Python path
-cwd = os.getcwd()
-root_module_path = os.path.abspath(os.path.join(cwd, os.pardir))
-sys.path.append(root_module_path)
-
 import pytest
 from bs4 import BeautifulSoup
-from website_connection_checks import WpChecks
+from news_catalog.website_connection_checks import WpChecks
 
 
 @pytest.fixture
