@@ -3,7 +3,7 @@
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 
-from mongoDB_handler import mongoDB_handler
+from mongoDB_handler import MongoDBHandler
 from itemadapter import ItemAdapter
 from scrapy.exceptions import DropItem
 
@@ -26,7 +26,7 @@ class NewsReaderPipeline(object):
 
     def __init__(self, mongoDB_settings):
         settings = mongoDB_settings
-        self.mongodb = mongoDB_handler(mongoDB_settings=settings)
+        self.mongodb = MongoDBHandler(mongoDB_settings=settings)
 
     def open_spider(self, spider):
         latest_date = self.mongodb.get_max_date()

@@ -30,10 +30,9 @@ def run_spider(prefix):
     }
     process = CrawlerProcess(settings)
 
-    # Add your spider to the process
+    # Add spider to the process
     process.crawl(WPSpider, prefix=prefix)
 
-    # Start the process
     process.start()
 
 
