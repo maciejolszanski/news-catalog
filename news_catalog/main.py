@@ -11,8 +11,9 @@ from streamlit.web import cli as stcli
 
 
 def run_spider(prefix):
-    """
-    Function call scrapy spider that scrapes WP articles and saves data
+    """Call scrapy spider.
+
+    Call spider that scrapes WP articles and saves data
     to MongoDB database.
 
     Args:
@@ -30,14 +31,14 @@ def run_spider(prefix):
     }
     process = CrawlerProcess(settings)
 
-    # Add your spider to the process
+    # Add spider to the process
     process.crawl(WPSpider, prefix=prefix)
 
-    # Start the process
     process.start()
 
 
 def run_streamlit_app():
+    """Run Streamlit app."""
     sys.argv = [
         "streamlit",
         "run",

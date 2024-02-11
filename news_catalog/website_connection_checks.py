@@ -12,9 +12,7 @@ class WpChecks:
     prefixes = string.ascii_lowercase
 
     def _get_page(self):
-        """
-        Function returns html content of the page defined in 'url' attribute
-        of this class.
+        """Get html content of the page defined in 'url' attribute.
 
         Returns:
             soup (bs4.BeautifulSoup): HTML representation of page defined in
@@ -26,9 +24,7 @@ class WpChecks:
         return soup
 
     def get_css_prefix(self):
-        """
-        Function identifies currently used css prefix on page defined as 'url'
-        attribute and returns it.
+        """Identify currently used css prefix on page from 'url' attribute.
 
         Returns:
             prefix (str): Currently used css prefix.

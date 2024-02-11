@@ -7,7 +7,7 @@ class WPSpider(scrapy.Spider):
     name = "wp_spider"
 
     def start_requests(self):
-        """This is a function that runs after calling a spider
+        """Check if prefix were passed during call and start scraping.
 
         Raises:
             AttributeError: Raised if there is no CSS classes prefix defined
@@ -15,7 +15,6 @@ class WPSpider(scrapy.Spider):
         """
 
         url = "https://wiadomosci.wp.pl"
-
         prefix = getattr(self, "prefix", None)
         if prefix is None:
             raise AttributeError(
@@ -29,7 +28,8 @@ class WPSpider(scrapy.Spider):
         yield scrapy.Request(url, self.parse_articles_listing)
 
     def set_css_classes(self, class_prefix):
-        """
+        """Set CSS classes as spider attributes using prefix.
+
         WP webpage periodically rotates preefix to CSS classes. This function
         sets it according to the input value
 
@@ -54,8 +54,9 @@ class WPSpider(scrapy.Spider):
         self.date_class = f"signature--when {class_prefix}2VIX-Kh " + "desktop"
 
     def parse_articles_listing(self, response):
-        """
-        Function to parse list of articles webpage. It should be used to parse
+        """Parse list of articles and go to next page.
+
+        Parse webpage with list of articles. It should be used to parse
         a webpage that contains a list of articles, not one specific article.
 
         Args:
@@ -82,7 +83,8 @@ class WPSpider(scrapy.Spider):
             )
 
     def _parse_article_page(self, response, url):
-        """
+        """Parse specific article webpage.
+
         Function to parse specific article webpage. It should be used to parse
         a webpage that contains one specific article, not a list of articles.
 
@@ -107,11 +109,12 @@ class WPSpider(scrapy.Spider):
         )
 
         # Getting rid of a prefix to author name that sometimes exists
-        author = author_raw.lstrip("oprac.")
+        author = author_raw.lstrip("oprac.").lstrip()
 
-        # Getting rid of "Today" etc. prefix
-
-        date = " ".join(date_raw.split(" ")[-2:-1])
+        if date_raw:
+            date = self.format_date(date_raw)
+        else:
+            date = date_raw
 
         # Stopping crawling if the scraped article is older than the articles
         # from previous scraping
@@ -128,10 +131,28 @@ class WPSpider(scrapy.Spider):
 
         yield article_dict
 
+    def format_date(self, date_raw):
+        """Format date to YYYY-MM-DD.
+
+        Args:
+            date_raw (str): Scraped date.
+
+        Returns:
+            date (str): Date formatted to YYYY-MM-DD.
+        """
+        # Getting rid of "Today" etc. prefix and Hour
+        only_date = date_raw.split(" ")[-2]
+
+        date_elems = only_date.split("-")
+        date = "-".join(reversed(date_elems))
+
+        return date
+
     def extract_html_text(
         self, response, css_class, xpath_first_node, xpath_second_node=None
     ):
-        """
+        """Extract Text from a HTML response.
+
         This function extract text from a list of HTML nodes defined by
         first and second node. The xpath construction is as follows:
 
@@ -181,8 +202,7 @@ class WPSpider(scrapy.Spider):
         return full_text
 
     def _next_page(self, response):
-        """
-        This function calls the next page and calls parse() to process it.
+        """Yield next page.
 
         Args:
             response (HtmlResponse): Response of HTML GET method on which
