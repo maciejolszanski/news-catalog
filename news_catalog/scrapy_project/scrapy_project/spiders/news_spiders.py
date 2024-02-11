@@ -116,6 +116,11 @@ class WPSpider(scrapy.Spider):
         if date and date < self.last_scraped_date:
             raise CloseSpider("Stopped Scraping due to exceeding watermark!")
 
+        # Stopping crawling if the scraped article is older than the articles
+        # from previous scraping
+        if date and date < self.last_scraped_date:
+            raise CloseSpider("Stopped Scraping due to exceeding watermark!")
+
         article_dict = WPArticle()
         article_dict["title"] = title
         article_dict["date"] = date
