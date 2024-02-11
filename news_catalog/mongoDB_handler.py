@@ -8,8 +8,7 @@ import datetime as dt
 
 class MongoDBHandler:
     def __init__(self, mongoDB_settings):
-        """
-        Initalize database connetion
+        """Initalize database connetion
 
         Args:
             mongoDB_settings (dict): Settings that enable database connection.
@@ -32,8 +31,7 @@ class MongoDBHandler:
         print(self.db)
 
     def insert(self, data):
-        """
-        Function inserts data to mongoDB collection.
+        """Insert data to mongoDB collection.
 
         Args:
             data (list/dict): Data that are going to be inserted to collection.
@@ -44,8 +42,9 @@ class MongoDBHandler:
             self.collection.insert_one(data)
 
     def drop_duplicates(self, unique_keys):
-        """
-        Function removes duplicates from collection considering only keys
+        """Remove duplicates.
+
+        Remove duplicates from collection considering only keys
         that should be unique.
 
         Args:
@@ -70,8 +69,7 @@ class MongoDBHandler:
             self.collection.delete_many({"_id": {"$in": documents_to_delete}})
 
     def get_data(self):
-        """
-        Function returns all items stored in MongoDB collection.
+        """Get all items stored in MongoDB collection.
 
         Returns:
             items (list): List of items stored in MongoDB collection.
@@ -81,8 +79,7 @@ class MongoDBHandler:
         return list(items)
 
     def get_max_date(self):
-        """
-        Function returns max date from collection.
+        """Get max date from collection.
 
         Returns:
             max_date (str): Max date from MongoDB collection.
