@@ -132,6 +132,40 @@ def test_parse_article_page():
     assert actual_output == expected_output
 
 
+def test_parse_article_page_no_date():
+    article_html_body = """
+    <h1 class="article--title c1xAmRvR"><!-- react-text: 1758 -->Niech się pan tak nie denerwuje<!-- /react-text --></h1>
+    <span class="signature--author c2aU53vl desktop"><!-- react-text: 1751 -->oprac. <!-- /react-text --><!-- react-text: 1752 -->Adam Zygiel<!-- /react-text --></span>
+    <div class="signature--when c2VIX-Kh desktop"><span></span></div>
+    <div class="article--lead c1HGmjUl"><p>Wiceminister rolnictwa napisał.</p></div>
+    <div class="article--text cFQN8OU2 cYwaUr3X"><p>Lorem <a href="https://wiadomosci.wp.pl/" rel="seolink">Ipsum.</a></p></div>
+    <div class="article--text cFQN8OU2 cYwaUr3X"><p>Lorem</p></div>
+    """
+
+    url = "https://wiadomosci.wp.pl/test-article"
+    html_response = HtmlResponse(
+        url=url, body=article_html_body, encoding="utf-8"
+    )
+
+    spider = WPSpider()
+    spider.set_css_classes(class_prefix="c")
+    spider.set_last_scraped_date("2024-01-01")
+
+    actual_output = list(spider._parse_article_page(html_response, url))[0]
+
+    expected_output = {
+        "title": "Niech się pan tak nie denerwuje",
+        "date": "",
+        "author": "Adam Zygiel",
+        "lead": "Wiceminister rolnictwa napisał.",
+        "text": "Lorem Ipsum. Lorem",
+        "url": url,
+    }
+
+    assert isinstance(actual_output, WPArticle)
+    assert actual_output == expected_output
+
+
 def test_parse_article_page_stop_crawling():
     article_html_body = """
     <h1 class="article--title c1xAmRvR"><!-- react-text: 1758 -->Niech się pan tak nie denerwuje<!-- /react-text --></h1>

@@ -111,7 +111,10 @@ class WPSpider(scrapy.Spider):
         # Getting rid of a prefix to author name that sometimes exists
         author = author_raw.lstrip("oprac.").lstrip()
 
-        date = self.format_date(date_raw)
+        if date_raw:
+            date = self.format_date(date_raw)
+        else:
+            date = date_raw
 
         # Stopping crawling if the scraped article is older than the articles
         # from previous scraping
