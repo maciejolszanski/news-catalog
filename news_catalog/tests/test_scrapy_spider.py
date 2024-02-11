@@ -10,7 +10,7 @@ print(root_module_path)
 import pytest
 from scrapy_project.scrapy_project.spiders.news_spiders import WPSpider
 from scrapy_project.scrapy_project.items import WPArticle
-from scrapy.http import HtmlResponse
+from scrapy.http import HtmlResponse, Request
 from scrapy.exceptions import CloseSpider
 
 
@@ -155,7 +155,7 @@ def test_parse_article_page_stop_crawling():
         list(spider._parse_article_page(html_response, url))
 
 
-def test_parse_articles_listing():
+def test_parse_articles_listing_articles():
     article_html_body = """
     <a class="c2PrHTUx" title="&quot;Trzeba zrobić w Rosji porządek&quot;. Wałęsa w CNN o historycznej szansie" href="/trzeba-zrobic-w-rosji-porzadek-walesa-w-cnn-o-historycznej-szansie-6994196631181888a" data-reactid="1099"></a>
     <div class="c2eMLotm c2J4C9n0 c2N4iaRc" data-reactid="1121">
@@ -172,12 +172,62 @@ def test_parse_articles_listing():
     spider.set_css_classes(class_prefix="c")
     spider.set_last_scraped_date("2024-01-01")
 
-    actual_output = list(spider.parse_articles_listing(html_response))[0]
+    actual_output = list(spider.parse_articles_listing(html_response))
+
+    url_1 = "https://wiadomosci.wp.pl/trzeba-zrobic-w-rosji-porzadek-walesa-w-cnn-o-historycznej-szansie-6994196631181888a"
+    url_2 = "https://wiadomosci.wp.pl/wiadomo-ile-kosztowal-remont-w-kgp-po-granatniku-wyciekl-raport-6994196319877696a"
 
     expected_output = [
-        "<GET https://wiadomosci.wp.pl/trzeba-zrobic-w-rosji-porzadek-walesa-w-cnn-o-historycznej-szansie-6994196631181888a>"
+        Request(
+            url=url_1,
+            callback=spider._parse_article_page,
+            cb_kwargs={"url": url_1},
+        ),
+        Request(
+            url=url_2,
+            callback=spider._parse_article_page,
+            cb_kwargs={"url": url_2},
+        ),
     ]
 
-    print(actual_output)
-    assert isinstance(actual_output, WPArticle)
-    assert actual_output == expected_output
+    assert isinstance(actual_output[0], Request)
+    assert len(actual_output) == 2
+    assert actual_output[0].url == expected_output[0].url
+    assert actual_output[1].url == expected_output[1].url
+    assert actual_output[0].callback == expected_output[0].callback
+    assert actual_output[1].callback == expected_output[1].callback
+    assert actual_output[0].cb_kwargs == expected_output[0].cb_kwargs
+    assert actual_output[1].cb_kwargs == expected_output[1].cb_kwargs
+
+
+def test_parse_articles_listing_next_page():
+    article_html_body = """
+    <a class="c2PrHTUx" title="&quot;Trzeba zrobić w Rosji porządek&quot;. Wałęsa w CNN o historycznej szansie" href="/trzeba-zrobic-w-rosji-porzadek-walesa-w-cnn-o-historycznej-szansie-6994196631181888a" data-reactid="1099"></a>
+    <div class="c2eMLotm c2J4C9n0 c2N4iaRc" data-reactid="1121">
+    <div class="c2PrHTUx" data-reactid="1122">
+    <a class="c2PrHTUx" title="Wiadomo, ile kosztował remont w KGP po granatniku. Wyciekł raport" href="/wiadomo-ile-kosztowal-remont-w-kgp-po-granatniku-wyciekl-raport-6994196319877696a" data-reactid="1123">,</a>
+    <a class="c1xRndDA c1ZgYxIQ c2zbd-HY" title="" rel="next" href="/2" data-reactid="1220"></a>
+    """
+
+    url = "https://wiadomosci.wp.pl/test-article_list"
+    html_response = HtmlResponse(
+        url=url, body=article_html_body, encoding="utf-8"
+    )
+
+    spider = WPSpider()
+    spider.set_css_classes(class_prefix="c")
+    spider.set_last_scraped_date("2024-01-01")
+
+    actual_output = list(spider.parse_articles_listing(html_response))
+
+    expected_output = [
+        Request(
+            url="https://wiadomosci.wp.pl/2",
+            callback=spider.parse_articles_listing,
+        ),
+    ]
+
+    assert isinstance(actual_output[-1], Request)
+    assert len(actual_output) == 3
+    assert actual_output[-1].url == expected_output[-1].url
+    assert actual_output[-1].callback == expected_output[-1].callback
