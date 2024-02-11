@@ -15,7 +15,6 @@ class WPSpider(scrapy.Spider):
         """
 
         url = "https://wiadomosci.wp.pl"
-
         prefix = getattr(self, "prefix", None)
         if prefix is None:
             raise AttributeError(
@@ -107,12 +106,13 @@ class WPSpider(scrapy.Spider):
         )
 
         # Getting rid of a prefix to author name that sometimes exists
-        author = author_raw.lstrip("oprac.")
+        author = author_raw.lstrip("oprac.").lstrip()
 
         date = self.format_date(date_raw)
 
         # Stopping crawling if the scraped article is older than the articles
         # from previous scraping
+        print(date)
         if date and date < self.last_scraped_date:
             raise CloseSpider("Stopped Scraping due to exceeding watermark!")
 
@@ -128,10 +128,10 @@ class WPSpider(scrapy.Spider):
 
     def format_date(self, date_raw):
         # Getting rid of "Today" etc. prefix
-        date_elems = date_raw.split(" ")[-2:-1]
+        only_date = date_raw.split(" ")[-2]
 
-        # Changing from dd-mm-yyyy to yyyy-mm-dd
-        date = " ".join(reversed(date_elems))
+        date_elems = only_date.split("-")
+        date = "-".join(reversed(date_elems))
 
         return date
 
