@@ -73,15 +73,15 @@ def _convert_columns_to_datetime(df, columns):
 
 
 def _filter_categorical_column(df, col, st_column):
-    """Filter column that is a categorical one.
+    """Filter categorical column based on user input.
 
     Args:
-        df (pd.DataFrame): _description_
-        col (str): _description_
-        st_column (): _description_
+        df (pd.DataFrame): Dataframe to be filtered.
+        col (str): Column to be filtered.
+        st_column (st.delta_generator.DeltaGenerator): Streamlit column.
 
     Returns:
-        _type_: _description_
+        query (str): Query that will be used to filter df.
     """
     user_cat_input = st_column.multiselect(
         f"Values for {col.title()}",
@@ -96,6 +96,16 @@ def _filter_categorical_column(df, col, st_column):
 
 
 def _filter_datetime_column(df, col, st_column):
+    """Filter datetime column based on user input.
+
+    Args:
+        df (pd.DataFrame): Dataframe to be filtered.
+        col (str): Column to be filtered.
+        st_column (st.delta_generator.DeltaGenerator): Streamlit column.
+
+    Returns:
+        query (str): Query that will be used to filter df.
+    """
     user_date_input = st_column.date_input(
         f"Values for {col.title()}",
         value=(
@@ -113,6 +123,16 @@ def _filter_datetime_column(df, col, st_column):
 
 
 def _filter_text_columns(df, col, st_column):
+    """Filter text column based on user input.
+
+    Args:
+        df (pd.DataFrame): Dataframe to be filtered.
+        col (str): Column to be filtered.
+        st_column (st.delta_generator.DeltaGenerator): Streamlit column.
+
+    Returns:
+        query (str): Query that will be used to filter df.
+    """
     user_text_input = st_column.text_input(
         f"Substring or regex in {col.title()}",
     )
@@ -125,6 +145,15 @@ def _filter_text_columns(df, col, st_column):
 
 
 def display_dataframe_with_selections(df, config):
+    """Display Dataframe with column for selection and return selected rows.
+
+    Args:
+        df (pd.DataFrame): Dataframe to be displayed.
+        config (dict): Config for dataframe display.
+
+    Returns:
+        selected_rows (dict): Slected rows: {index: {col: val, col:val, ...}}
+    """
     df_with_selections = df.copy()
     df_with_selections.insert(0, "Select", False)
 
@@ -134,7 +163,6 @@ def display_dataframe_with_selections(df, config):
         categorical_columns=["author"],
     )
 
-    # Get dataframe row-selections from user with st.data_editor
     edited_df = st.data_editor(
         df_with_selections,
         column_config=config,
@@ -142,8 +170,7 @@ def display_dataframe_with_selections(df, config):
         disabled=df.columns,
     )
 
-    # Filter the dataframe using the temporary column, then drop the column
     selected_rows = edited_df[edited_df.Select]
+    selected_rows = selected_rows.to_dict(orient="index")
 
-    # return dict of selected articles as {index: {col: val, col:val, ...}}
-    return selected_rows.to_dict(orient="index")
+    return selected_rows
