@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+from bson import ObjectId
+import numpy as np
 
 from pandas.api.types import (
     is_datetime64_any_dtype,
@@ -174,3 +176,65 @@ def display_dataframe_with_selections(df, config):
     selected_rows = selected_rows.to_dict(orient="index")
 
     return selected_rows
+
+
+def display_selected_articles(selected_articles, all_articles, mongo_db):
+    if selected_articles:
+        assign_tags = st.toggle("Edit Tags Manually")
+
+    try:
+        all_tags = list(all_articles.explode("tags")["tags"].unique())
+        all_tags.remove(np.nan)
+    except:
+        all_tags = []
+
+    for article in selected_articles.values():
+        st.header(article["title"])
+        st.caption(f"{article['author']}, {article['date']}")
+        st.write(article["lead"])
+        st.write(article["text"])
+
+        article_tags = article.get("tags", "")
+        if isinstance(article_tags, float):
+            article_tags = []
+
+        st.write(f"Tags: {article_tags}")
+
+        if assign_tags:
+            edit_tags(article, all_tags, article_tags, mongo_db)
+
+
+def edit_tags(article, all_tags, article_tags, mongo_db):
+    tags_to_choose = all_tags + article_tags
+    standard_tags = st.multiselect(
+        label="Remove current tags or add new tag from a list",
+        options=tags_to_choose,
+        default=article_tags,
+        key=f"{article['_id']}_multiselect",
+    )
+
+    new_defined_tag = st.text_input(
+        label="Define new tag", key=f"{article['_id']}_text_input"
+    )
+
+    if new_defined_tag:
+        edited_tags = standard_tags + [new_defined_tag]
+    else:
+        edited_tags = standard_tags
+
+    save_button = st.button(
+        label="Save Tags",
+        key=f"{article['_id']}_button",
+    )
+
+    if save_button:
+        _update_tags(
+            tags=edited_tags,
+            mongo_db=mongo_db,
+            article_id=ObjectId(article["_id"]),
+        )
+
+
+def _update_tags(mongo_db, article_id, tags):
+    if isinstance(tags, list):
+        mongo_db.update_item(article_id, "tags", tags)
