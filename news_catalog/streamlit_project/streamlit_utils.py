@@ -30,27 +30,26 @@ def filter_dataframe(df, allowed_columns, categorical_columns=[]):
         to_filter_columns = st.multiselect(
             "Filter dataframe on", allowed_columns
         )
-
         queries = []
+
         for col in to_filter_columns:
             _, right = st.columns((1, 20))
 
-            if col in categorical_columns or df[col].nunique() < 10:
+            if col in categorical_columns:
                 query = _filter_categorical_column(df, col, right)
-                if query:
-                    queries.append(query)
+                queries.append(query)
 
             elif is_datetime64_any_dtype(df[col]):
                 query = _filter_datetime_column(df, col, right)
-                if query:
-                    queries.append(query)
+                queries.append(query)
+
             else:
                 query = _filter_text_columns(df, col, right)
-                if query:
-                    queries.append(query)
+                queries.append(query)
 
-            if queries:
-                final_query = " and ".join(queries)
+            queries_filtered = list(filter(lambda x: x is not None, queries))
+            if queries_filtered:
+                final_query = " and ".join(queries_filtered)
                 df = df.query(final_query)
 
     return df
@@ -74,6 +73,16 @@ def _convert_columns_to_datetime(df, columns):
 
 
 def _filter_categorical_column(df, col, st_column):
+    """Filter column that is a categorical one.
+
+    Args:
+        df (pd.DataFrame): _description_
+        col (str): _description_
+        st_column (): _description_
+
+    Returns:
+        _type_: _description_
+    """
     user_cat_input = st_column.multiselect(
         f"Values for {col}",
         df[col].unique(),
