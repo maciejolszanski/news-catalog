@@ -16,7 +16,7 @@ def filter_dataframe(df, allowed_columns, categorical_columns=[]):
     Returns:
         pd.DataFrame: Filtered dataframe.
     """
-    modify = st.checkbox("Add filters")
+    modify = st.toggle("Filters")
 
     if not modify:
         return df
@@ -33,7 +33,7 @@ def filter_dataframe(df, allowed_columns, categorical_columns=[]):
         queries = []
 
         for col in to_filter_columns:
-            _, right = st.columns((1, 20))
+            _, right = st.columns([0.1, 0.9])
 
             if col in categorical_columns:
                 query = _filter_categorical_column(df, col, right)
@@ -84,7 +84,7 @@ def _filter_categorical_column(df, col, st_column):
         _type_: _description_
     """
     user_cat_input = st_column.multiselect(
-        f"Values for {col}",
+        f"Values for {col.title()}",
         df[col].unique(),
     )
 
@@ -97,7 +97,7 @@ def _filter_categorical_column(df, col, st_column):
 
 def _filter_datetime_column(df, col, st_column):
     user_date_input = st_column.date_input(
-        f"Values for {col}",
+        f"Values for {col.title()}",
         value=(
             df[col].min(),
             df[col].max(),
@@ -114,7 +114,7 @@ def _filter_datetime_column(df, col, st_column):
 
 def _filter_text_columns(df, col, st_column):
     user_text_input = st_column.text_input(
-        f"Substring or regex in {col}",
+        f"Substring or regex in {col.title()}",
     )
     query = None
     if user_text_input:
