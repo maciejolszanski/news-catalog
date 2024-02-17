@@ -1,31 +1,13 @@
 import streamlit as st
-from mongoDB_handler import MongoDBHandler
 import pandas as pd
-
-
-def dataframe_with_selections(df, config):
-    df_with_selections = df.copy()
-    df_with_selections.insert(0, "Select", False)
-
-    # Get dataframe row-selections from user with st.data_editor
-    edited_df = st.data_editor(
-        df_with_selections,
-        column_config=config,
-        hide_index=True,
-        disabled=df.columns,
-    )
-
-    # Filter the dataframe using the temporary column, then drop the column
-    selected_rows = edited_df[edited_df.Select]
-
-    # return dict of selected articles as {index: {col: val, col:val, ...}}
-    return selected_rows.to_dict(orient="index")
+from mongoDB_handler import MongoDBHandler
+from streamlit_utils import display_dataframe_with_selections
 
 
 st.set_page_config(
     page_title="News Catalog",
     page_icon=":book:",
-    layout="centered",
+    layout="centered",  # centered/wide
 )
 
 st.title(":book: News Catalog")
@@ -38,8 +20,8 @@ df = pd.DataFrame(items, index=list(range(len(items))))
 
 column_config = {
     "_id": None,
-    "title": "Article title",
-    "data": st.column_config.DateColumn(),
+    "title": "Title",
+    "date": st.column_config.DateColumn("Date"),
     "lead": None,
     "text": None,
     "author": "Author",
@@ -47,7 +29,7 @@ column_config = {
     "Read": st.column_config.CheckboxColumn(required=True),
 }
 
-selected_articles = dataframe_with_selections(df, column_config)
+selected_articles = display_dataframe_with_selections(df, column_config)
 
 for article in selected_articles.values():
     st.header(article["title"])
