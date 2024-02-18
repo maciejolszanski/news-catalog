@@ -157,7 +157,7 @@ def display_dataframe_with_selections(df, config):
         selected_rows (dict): Slected rows: {index: {col: val, col:val, ...}}
     """
     df_with_selections = df.copy()
-    df_with_selections.insert(0, "Select", False)
+    df_with_selections.insert(0, "Read", False)
 
     df_with_selections = filter_dataframe(
         df_with_selections,
@@ -172,16 +172,15 @@ def display_dataframe_with_selections(df, config):
         disabled=df.columns,
     )
 
-    selected_rows = edited_df[edited_df.Select]
+    selected_rows = edited_df[edited_df["Read"]]
     selected_rows = selected_rows.to_dict(orient="index")
 
     return selected_rows
 
 
-def display_selected_articles(selected_articles, all_articles, mongo_db):
-    if selected_articles:
-        assign_tags = st.toggle("Edit Tags Manually")
-
+def display_selected_articles(
+    selected_articles, all_articles, mongo_db, assign_tags
+):
     try:
         all_tags = list(all_articles.explode("tags")["tags"].unique())
         all_tags.remove(np.nan)
@@ -217,7 +216,7 @@ def edit_tags(article, all_tags, article_tags, mongo_db):
         label="Define new tag", key=f"{article['_id']}_text_input"
     )
 
-    if new_defined_tag:
+    if new_defined_tag and (new_defined_tag not in tags_to_choose):
         edited_tags = standard_tags + [new_defined_tag]
     else:
         edited_tags = standard_tags
