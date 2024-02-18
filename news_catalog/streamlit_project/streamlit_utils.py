@@ -318,3 +318,21 @@ def _update_tags(mongo_db, article_id: str, tags: list):
     """Update tags of document in MongoDB"""
     if isinstance(tags, list):
         mongo_db.update_item(ObjectId(article_id), "tags", tags)
+
+
+def navigate_articles(articles):
+    def _iterate_index(value):
+        st.session_state.article_index += value
+
+    if "article_index" not in st.session_state:
+        st.session_state.article_index = 0
+
+    index = st.session_state.article_index
+
+    left, _, right = st.columns([0.1, 1, 0.1])
+    if index < len(articles):
+        right.button(":arrow_forward:", on_click=_iterate_index, args=[1])
+    if index > 0:
+        left.button(":arrow_backward:", on_click=_iterate_index, args=[-1])
+
+    return index
