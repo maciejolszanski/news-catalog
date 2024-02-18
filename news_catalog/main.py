@@ -42,7 +42,7 @@ def run_streamlit_app():
     sys.argv = [
         "streamlit",
         "run",
-        r"news_catalog\streamlit_project\streamlit_main.py",
+        r"news_catalog\streamlit_project\Home.py",
     ]
     sys.exit(stcli.main())
 

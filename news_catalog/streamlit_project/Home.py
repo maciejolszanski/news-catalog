@@ -29,9 +29,13 @@ column_config = {
     "text": None,
     "author": "Author",
     "url": None,
-    "Read": st.column_config.CheckboxColumn(required=True),
+    "tags": "Tags",
 }
 
 selected_articles = display_dataframe_with_selections(articles, column_config)
 
-display_selected_articles(selected_articles, articles, mongodb)
+assign_tags = False
+if selected_articles:
+    assign_tags = st.toggle("Edit Tags Manually")
+
+display_selected_articles(selected_articles, articles, mongodb, assign_tags)
