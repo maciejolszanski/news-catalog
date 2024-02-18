@@ -178,62 +178,143 @@ def display_dataframe_with_selections(df, config):
     return selected_rows
 
 
-def display_selected_articles(
-    selected_articles, all_articles, mongo_db, assign_tags
-):
+def get_all_unique_tags(articles: pd.DataFrame) -> list:
+    """Get unique list of tags from input dataframe."""
+
+    disallowed_tags = [None, np.nan, "", float("nan")]
+
+    all_tags = list(articles.explode("tags")["tags"].unique())
+
     try:
-        all_tags = list(all_articles.explode("tags")["tags"].unique())
-        all_tags.remove(np.nan)
+        for disallowed_tag in disallowed_tags:
+            if disallowed_tag in all_tags:
+                all_tags.remove(disallowed_tag)
     except:
         all_tags = []
 
+    return all_tags
+
+
+def get_article_tags(article: dict) -> list:
+    """Get list of article tags."""
+    article_tags = article.get("tags", "")
+    if isinstance(article_tags, float):
+        article_tags = []
+
+    return article_tags
+
+
+def display_article_text(article: dict) -> None:
+    """Display article as well formatted text."""
+    st.header(article["title"])
+    st.caption(f"{article['author']}, {article['date']}")
+    st.write(article["lead"])
+    st.write(article["text"])
+
+
+def display_article_tags(article_tags: list) -> None:
+    """Add hash to tags and display."""
+    tags_with_hash = [f"#{tag}" for tag in article_tags]
+    st.write(f"Tags: :red[{' '.join(tags_with_hash)}]")
+
+
+def add_new_tag(key, known_tags, new_tags, **update_tags_kwargs):
+    """Add new tag to multiselect display and clear input."""
+
+    # Save multiselect input not to lose it after refresh of default values
+    _update_tags(**update_tags_kwargs)
+
+    new_tag = st.session_state[key]
+    if new_tag not in known_tags and new_tag not in new_tags and new_tag != "":
+        new_tags.append(new_tag)
+
+    new_tags = []
+    st.session_state[key] = ""
+
+
+def display_selected_articles(
+    selected_articles, all_articles, mongo_db, assign_tags
+):
+    """Display article to be read and add possibility to assign tags.
+
+    Args:
+        selected_articles (dict): Dict {index: article_dict, ...}.
+        all_articles (pd.DataFrame): DataFrame of all articles.
+        mongo_db (MongoDBHandler): MongoDBHandler object.
+        assign_tags (bool): If the UI for assigning tags should be enabled.
+    """
+    all_tags = get_all_unique_tags(all_articles)
+
     for article in selected_articles.values():
-        st.header(article["title"])
-        st.caption(f"{article['author']}, {article['date']}")
-        st.write(article["lead"])
-        st.write(article["text"])
-
-        article_tags = article.get("tags", "")
-        if isinstance(article_tags, float):
-            article_tags = []
-
-        st.write(f"Tags: {article_tags}")
+        display_article_text(article)
+        article_tags = get_article_tags(article)
+        display_article_tags(article_tags)
 
         if assign_tags:
             edit_tags(article, all_tags, article_tags, mongo_db)
 
 
-def edit_tags(article, all_tags, article_tags, mongo_db):
-    tags_to_choose = all_tags + article_tags
-    standard_tags = st.multiselect(
-        label="Remove current tags or add new tag from a list",
+def edit_tags(article, known_tags, article_tags, mongo_db):
+    """Add or remove tags to article.
+
+    Function displays multiselect field, text_input and button:
+      - multiselect - displays currently assigned tags
+      - text_input  - adds new tag to multiselect options and immediately
+                      displays as selected in multiselect
+      - button      - saves tags to mongo_db
+
+    Args:
+        article (dict): Article to assign tags for.
+        known_tags (list): All known tags in DB.
+        article_tags (list): Tags of selected article.
+        mongo_db (MongoDBHandler): MongoDBHandler object.
+    """
+
+    if f"{article['_id']}_text_input" not in st.session_state:
+        st.session_state[f"{article['_id']}_text_input"] = ""
+
+    if "new_tags" not in st.session_state:
+        st.session_state["new_tags"] = []
+
+    tags_to_choose = known_tags + st.session_state["new_tags"]
+    displayed_tags = list(set(article_tags + st.session_state["new_tags"]))
+
+    assigned_tags = st.multiselect(
+        label="Remove current tags or add new tag from a list "
+        + ":red[(Remeber to save when done with editing)]",
         options=tags_to_choose,
-        default=article_tags,
+        default=displayed_tags,
         key=f"{article['_id']}_multiselect",
     )
 
-    new_defined_tag = st.text_input(
-        label="Define new tag", key=f"{article['_id']}_text_input"
+    kwargs_to_save_tags = {
+        "tags": assigned_tags,
+        "mongo_db": mongo_db,
+        "article_id": article["_id"],
+    }
+
+    text_input_key = f"{article['_id']}_text_input"
+    st.text_input(
+        label="Define new tag",
+        key=text_input_key,
+        on_change=add_new_tag,
+        kwargs={
+            "key": text_input_key,
+            "known_tags": known_tags,
+            "new_tags": st.session_state["new_tags"],
+            **kwargs_to_save_tags,
+        },
     )
 
-    if new_defined_tag and (new_defined_tag not in tags_to_choose):
-        edited_tags = standard_tags + [new_defined_tag]
-    else:
-        edited_tags = standard_tags
-
-    save_button = st.button(
+    st.button(
         label="Save Tags",
         key=f"{article['_id']}_button",
+        on_click=_update_tags,
+        kwargs=kwargs_to_save_tags,
     )
 
-    if save_button:
-        _update_tags(
-            tags=edited_tags,
-            mongo_db=mongo_db,
-            article_id=ObjectId(article["_id"]),
-        )
 
-
-def _update_tags(mongo_db, article_id, tags):
+def _update_tags(mongo_db, article_id: str, tags: list):
+    """Update tags of document in MongoDB"""
     if isinstance(tags, list):
-        mongo_db.update_item(article_id, "tags", tags)
+        mongo_db.update_item(ObjectId(article_id), "tags", tags)
