@@ -218,18 +218,19 @@ def display_article_tags(article_tags: list) -> None:
     st.write(f"Tags: :red[{' '.join(tags_with_hash)}]")
 
 
-def add_new_tag(key, known_tags, new_tags, **update_tags_kwargs):
+def add_new_tag(text_input_key, **update_tags_kwargs):
     """Add new tag to multiselect display and clear input."""
 
-    # Save multiselect input not to lose it after refresh of default values
-    _update_tags(**update_tags_kwargs)
-
-    new_tag = st.session_state[key]
-    if new_tag not in known_tags and new_tag not in new_tags and new_tag != "":
-        new_tags.append(new_tag)
-
     new_tags = []
-    st.session_state[key] = ""
+    new_tag = st.session_state[text_input_key].lower()
+    if new_tag != "":
+        new_tags = [new_tag]
+
+    tags_to_assign = update_tags_kwargs.get("tags", []) + new_tags
+    update_tags_kwargs.update({"tags": tags_to_assign})
+
+    _update_tags(**update_tags_kwargs)
+    st.session_state[text_input_key] = ""
 
 
 def display_selected_articles(
@@ -259,8 +260,8 @@ def edit_tags(article, known_tags, article_tags, mongo_db):
 
     Function displays multiselect field, text_input and button:
       - multiselect - displays currently assigned tags
-      - text_input  - adds new tag to multiselect options and immediately
-                      displays as selected in multiselect
+      - text_input  - adds new tag that doesn't exist in multiselect option
+                      and saves all chosen tags to mongodb.
       - button      - saves tags to mongo_db
 
     Args:
@@ -273,11 +274,8 @@ def edit_tags(article, known_tags, article_tags, mongo_db):
     if f"{article['_id']}_text_input" not in st.session_state:
         st.session_state[f"{article['_id']}_text_input"] = ""
 
-    if "new_tags" not in st.session_state:
-        st.session_state["new_tags"] = []
-
-    tags_to_choose = known_tags + st.session_state["new_tags"]
-    displayed_tags = list(set(article_tags + st.session_state["new_tags"]))
+    tags_to_choose = known_tags
+    displayed_tags = article_tags
 
     assigned_tags = st.multiselect(
         label="Remove current tags or add new tag from a list "
@@ -299,9 +297,7 @@ def edit_tags(article, known_tags, article_tags, mongo_db):
         key=text_input_key,
         on_change=add_new_tag,
         kwargs={
-            "key": text_input_key,
-            "known_tags": known_tags,
-            "new_tags": st.session_state["new_tags"],
+            "text_input_key": text_input_key,
             **kwargs_to_save_tags,
         },
     )
