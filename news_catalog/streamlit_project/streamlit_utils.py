@@ -181,16 +181,13 @@ def display_dataframe_with_selections(df, config):
 def get_all_unique_tags(articles: pd.DataFrame) -> list:
     """Get unique list of tags from input dataframe."""
 
-    disallowed_tags = [None, np.nan, "", float("nan")]
+    disallowed_tags = [None, np.nan, "", float("nan"), []]
 
     all_tags = list(articles.explode("tags")["tags"].unique())
 
-    try:
-        for disallowed_tag in disallowed_tags:
-            if disallowed_tag in all_tags:
-                all_tags.remove(disallowed_tag)
-    except:
-        all_tags = []
+    for disallowed_tag in disallowed_tags:
+        if disallowed_tag in all_tags:
+            all_tags.remove(disallowed_tag)
 
     return all_tags
 
