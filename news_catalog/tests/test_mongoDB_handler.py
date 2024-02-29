@@ -104,3 +104,41 @@ def test_get_max_date_default(mock_mongo_db):
     expected_output = "2023-12-30"
 
     assert actual_output == expected_output
+
+
+def test_update_item(mock_mongo_db):
+    objects = [
+        {"_id": "1", "a": "xyz"},
+        {"_id": "2", "a": "abc"},
+    ]
+    mock_mongo_db.collection.insert_many(objects)
+
+    mock_mongo_db.update_item("1", "a", "xyz-modified")
+
+    found_items = list(mock_mongo_db.collection.find())
+    expected_ouptut = [
+        {"_id": "1", "a": "xyz-modified"},
+        {"_id": "2", "a": "abc"},
+    ]
+
+    assert len(found_items) == 2
+    assert found_items == expected_ouptut
+
+
+def test_update_item_new_field(mock_mongo_db):
+    objects = [
+        {"_id": "1", "a": "xyz"},
+        {"_id": "2", "a": "abc"},
+    ]
+    mock_mongo_db.collection.insert_many(objects)
+
+    mock_mongo_db.update_item("2", "tags", ["tag1", "tag2"])
+
+    found_items = list(mock_mongo_db.collection.find())
+    expected_ouptut = [
+        {"_id": "1", "a": "xyz"},
+        {"_id": "2", "a": "abc", "tags": ["tag1", "tag2"]},
+    ]
+
+    assert len(found_items) == 2
+    assert found_items == expected_ouptut

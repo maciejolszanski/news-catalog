@@ -1,13 +1,16 @@
 import streamlit as st
 import pandas as pd
 from mongoDB_handler import MongoDBHandler
-from streamlit_utils import display_dataframe_with_selections
+from streamlit_utils import (
+    display_dataframe_with_selections,
+    display_selected_articles,
+)
 
 
 st.set_page_config(
     page_title="News Catalog",
     page_icon=":book:",
-    layout="centered",  # centered/wide
+    layout="wide",  # centered/wide
 )
 
 st.title(":book: News Catalog")
@@ -16,7 +19,7 @@ settings = st.secrets["mongo"]
 mongodb = MongoDBHandler(mongoDB_settings=settings)
 items = mongodb.get_data()
 
-df = pd.DataFrame(items, index=list(range(len(items))))
+articles = pd.DataFrame(items, index=list(range(len(items))))
 
 column_config = {
     "_id": None,
@@ -26,13 +29,13 @@ column_config = {
     "text": None,
     "author": "Author",
     "url": None,
-    "Read": st.column_config.CheckboxColumn(required=True),
+    "tags": "Tags",
 }
 
-selected_articles = display_dataframe_with_selections(df, column_config)
+selected_articles = display_dataframe_with_selections(articles, column_config)
 
-for article in selected_articles.values():
-    st.header(article["title"])
-    st.caption(f"{article['author']}, {article['date']}")
-    st.write(article["lead"])
-    st.write(article["text"])
+assign_tags = False
+if selected_articles:
+    assign_tags = st.toggle("Edit Tags Manually")
+
+display_selected_articles(selected_articles, articles, mongodb, assign_tags)

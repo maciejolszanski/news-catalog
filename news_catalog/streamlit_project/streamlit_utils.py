@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+from bson import ObjectId
+import numpy as np
 
 from pandas.api.types import (
     is_datetime64_any_dtype,
@@ -81,7 +83,7 @@ def _filter_categorical_column(df, col, st_column):
         st_column (st.delta_generator.DeltaGenerator): Streamlit column.
 
     Returns:
-        query (str): Query that will be used to filter df.
+        str: Query that will be used to filter df.
     """
     user_cat_input = st_column.multiselect(
         f"Values for {col.title()}",
@@ -104,7 +106,7 @@ def _filter_datetime_column(df, col, st_column):
         st_column (st.delta_generator.DeltaGenerator): Streamlit column.
 
     Returns:
-        query (str): Query that will be used to filter df.
+        str: Query that will be used to filter df.
     """
     user_date_input = st_column.date_input(
         f"Values for {col.title()}",
@@ -131,7 +133,7 @@ def _filter_text_columns(df, col, st_column):
         st_column (st.delta_generator.DeltaGenerator): Streamlit column.
 
     Returns:
-        query (str): Query that will be used to filter df.
+        str: Query that will be used to filter df.
     """
     user_text_input = st_column.text_input(
         f"Substring or regex in {col.title()}",
@@ -152,10 +154,10 @@ def display_dataframe_with_selections(df, config):
         config (dict): Config for dataframe display.
 
     Returns:
-        selected_rows (dict): Slected rows: {index: {col: val, col:val, ...}}
+        dict: Slected rows: {index: {col: val, col:val, ...}}
     """
     df_with_selections = df.copy()
-    df_with_selections.insert(0, "Select", False)
+    df_with_selections.insert(0, "Read", False)
 
     df_with_selections = filter_dataframe(
         df_with_selections,
@@ -170,7 +172,175 @@ def display_dataframe_with_selections(df, config):
         disabled=df.columns,
     )
 
-    selected_rows = edited_df[edited_df.Select]
+    selected_rows = edited_df[edited_df["Read"]]
     selected_rows = selected_rows.to_dict(orient="index")
 
     return selected_rows
+
+
+def get_all_unique_tags(articles: pd.DataFrame) -> list:
+    """Get unique list of tags from input dataframe."""
+
+    disallowed_tags = [None, np.nan, "", float("nan")]
+
+    all_tags = list(articles.explode("tags")["tags"].unique())
+
+    try:
+        for disallowed_tag in disallowed_tags:
+            if disallowed_tag in all_tags:
+                all_tags.remove(disallowed_tag)
+    except:
+        all_tags = []
+
+    return all_tags
+
+
+def get_article_tags(article: dict) -> list:
+    """Get list of article tags."""
+    article_tags = article.get("tags", "")
+    if isinstance(article_tags, float):
+        article_tags = []
+
+    return article_tags
+
+
+def display_article_text(article: dict) -> None:
+    """Display article as well formatted text."""
+    st.header(article["title"])
+    st.caption(f"{article['author']}, {article['date']}")
+    st.write(article["lead"])
+    st.write(article["text"])
+
+
+def display_article_tags(article_tags: list) -> None:
+    """Add hash to tags and display."""
+    tags_with_hash = [f"#{tag}" for tag in article_tags]
+    st.write(f"Tags: :red[{' '.join(tags_with_hash)}]")
+
+
+def display_selected_articles(
+    selected_articles, all_articles, mongo_db, assign_tags
+):
+    """Display article to be read and add possibility to assign tags.
+
+    Args:
+        selected_articles (dict): Dict {index: article_dict, ...}.
+        all_articles (pd.DataFrame): DataFrame of all articles.
+        mongo_db (MongoDBHandler): MongoDBHandler object.
+        assign_tags (bool): If the UI for assigning tags should be enabled.
+    """
+    all_tags = get_all_unique_tags(all_articles)
+
+    for article in selected_articles.values():
+        display_article_text(article)
+        article_tags = get_article_tags(article)
+        display_article_tags(article_tags)
+
+        if assign_tags:
+            edit_tags(article, all_tags, article_tags, mongo_db)
+
+
+def edit_tags(article, known_tags, article_tags, mongo_db):
+    """Add or remove tags to article.
+
+    Function displays multiselect field, text_input and button:
+      - multiselect - displays currently assigned tags
+      - text_input  - adds new tag that doesn't exist in multiselect option
+                      and saves all chosen tags to mongodb.
+      - button      - saves tags to mongo_db
+
+    Args:
+        article (dict): Article to assign tags for.
+        known_tags (list): All known tags in DB.
+        article_tags (list): Tags of selected article.
+        mongo_db (MongoDBHandler): MongoDBHandler object.
+    """
+
+    if f"{article['_id']}_text_input" not in st.session_state:
+        st.session_state[f"{article['_id']}_text_input"] = ""
+
+    tags_to_choose = known_tags
+    displayed_tags = article_tags
+
+    assigned_tags = st.multiselect(
+        label="Remove current tags or add new tag from a list "
+        + ":red[(Remeber to save when done with editing)]",
+        options=tags_to_choose,
+        default=displayed_tags,
+        key=f"{article['_id']}_multiselect",
+    )
+
+    kwargs_to_save_tags = {
+        "tags": assigned_tags,
+        "mongo_db": mongo_db,
+        "article_id": article["_id"],
+    }
+
+    text_input_key = f"{article['_id']}_text_input"
+    st.text_input(
+        label="Define new tag",
+        key=text_input_key,
+        on_change=add_new_tag,
+        kwargs={
+            "text_input_key": text_input_key,
+            **kwargs_to_save_tags,
+        },
+    )
+
+    st.button(
+        label="Save Tags",
+        key=f"{article['_id']}_button",
+        on_click=_update_tags,
+        kwargs=kwargs_to_save_tags,
+    )
+
+
+def add_new_tag(text_input_key: str, **update_tags_kwargs) -> None:
+    """Add tag to article by text input field and clear text input."""
+
+    new_tags = []
+    new_tag = st.session_state[text_input_key].lower()
+    if new_tag != "":
+        new_tags = [new_tag]
+
+    tags_to_assign = update_tags_kwargs.get("tags", []) + new_tags
+    update_tags_kwargs.update({"tags": tags_to_assign})
+
+    _update_tags(**update_tags_kwargs)
+    st.session_state[text_input_key] = ""
+
+
+def _update_tags(mongo_db, article_id: str, tags: list):
+    """Save tags selected in multiselect field to mongodb."""
+    if isinstance(tags, list):
+        mongo_db.update_item(ObjectId(article_id), "tags", tags)
+
+
+def navigate_articles(articles: pd.DataFrame) -> int:
+    """Iterate over articles based on their index.
+
+    Args:
+        articles (pd.DataFrame): DF containing articles to navigate between.
+
+    Returns:
+        int: Index of article to be displayed.
+    """
+
+    def _iterate_index(value):
+        st.session_state.article_index += value
+
+    if "article_index" not in st.session_state:
+        st.session_state.article_index = 0
+
+    articles_num = len(articles)
+    index = st.session_state.article_index
+
+    st.text(f"{index}/{articles_num}")
+
+    left, _, right = st.columns([0.1, 1, 0.1])
+    if index < articles_num:
+        right.button(":arrow_forward:", on_click=_iterate_index, args=[1])
+    if index > 0:
+        left.button(":arrow_backward:", on_click=_iterate_index, args=[-1])
+
+    return index
