@@ -1,6 +1,6 @@
 # NEWS CATALOG
 
-News Catalog is a project that will help you stay informed and filer out
+News Catalog is a project that will help you stay informed and filter out
 rubbish articles. Thanks to it you will be able to read all news
 (integrated from multiple websites) from Poland in single app.
 
