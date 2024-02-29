@@ -140,7 +140,6 @@ def _filter_text_columns(df, col, st_column):
     )
     query = None
     if user_text_input:
-        df = df[df[col].astype(str).str.contains(user_text_input)]
         query = f"{col}.str.contains('{user_text_input}', case=False)"
 
     return query
