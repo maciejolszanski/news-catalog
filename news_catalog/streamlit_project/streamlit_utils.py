@@ -83,7 +83,7 @@ def _filter_categorical_column(df, col, st_column):
         st_column (st.delta_generator.DeltaGenerator): Streamlit column.
 
     Returns:
-        query (str): Query that will be used to filter df.
+        str: Query that will be used to filter df.
     """
     user_cat_input = st_column.multiselect(
         f"Values for {col.title()}",
@@ -106,7 +106,7 @@ def _filter_datetime_column(df, col, st_column):
         st_column (st.delta_generator.DeltaGenerator): Streamlit column.
 
     Returns:
-        query (str): Query that will be used to filter df.
+        str: Query that will be used to filter df.
     """
     user_date_input = st_column.date_input(
         f"Values for {col.title()}",
@@ -133,7 +133,7 @@ def _filter_text_columns(df, col, st_column):
         st_column (st.delta_generator.DeltaGenerator): Streamlit column.
 
     Returns:
-        query (str): Query that will be used to filter df.
+        str: Query that will be used to filter df.
     """
     user_text_input = st_column.text_input(
         f"Substring or regex in {col.title()}",
@@ -154,7 +154,7 @@ def display_dataframe_with_selections(df, config):
         config (dict): Config for dataframe display.
 
     Returns:
-        selected_rows (dict): Slected rows: {index: {col: val, col:val, ...}}
+        dict: Slected rows: {index: {col: val, col:val, ...}}
     """
     df_with_selections = df.copy()
     df_with_selections.insert(0, "Read", False)
@@ -216,21 +216,6 @@ def display_article_tags(article_tags: list) -> None:
     """Add hash to tags and display."""
     tags_with_hash = [f"#{tag}" for tag in article_tags]
     st.write(f"Tags: :red[{' '.join(tags_with_hash)}]")
-
-
-def add_new_tag(text_input_key, **update_tags_kwargs):
-    """Add new tag to multiselect display and clear input."""
-
-    new_tags = []
-    new_tag = st.session_state[text_input_key].lower()
-    if new_tag != "":
-        new_tags = [new_tag]
-
-    tags_to_assign = update_tags_kwargs.get("tags", []) + new_tags
-    update_tags_kwargs.update({"tags": tags_to_assign})
-
-    _update_tags(**update_tags_kwargs)
-    st.session_state[text_input_key] = ""
 
 
 def display_selected_articles(
@@ -310,23 +295,50 @@ def edit_tags(article, known_tags, article_tags, mongo_db):
     )
 
 
+def add_new_tag(text_input_key: str, **update_tags_kwargs) -> None:
+    """Add tag to article by text input field and clear text input."""
+
+    new_tags = []
+    new_tag = st.session_state[text_input_key].lower()
+    if new_tag != "":
+        new_tags = [new_tag]
+
+    tags_to_assign = update_tags_kwargs.get("tags", []) + new_tags
+    update_tags_kwargs.update({"tags": tags_to_assign})
+
+    _update_tags(**update_tags_kwargs)
+    st.session_state[text_input_key] = ""
+
+
 def _update_tags(mongo_db, article_id: str, tags: list):
-    """Update tags of document in MongoDB"""
+    """Save tags selected in multiselect field to mongodb."""
     if isinstance(tags, list):
         mongo_db.update_item(ObjectId(article_id), "tags", tags)
 
 
-def navigate_articles(articles):
+def navigate_articles(articles: pd.DataFrame) -> int:
+    """Iterate over articles based on their index.
+
+    Args:
+        articles (pd.DataFrame): DF containing articles to navigate between.
+
+    Returns:
+        int: Index of article to be displayed.
+    """
+
     def _iterate_index(value):
         st.session_state.article_index += value
 
     if "article_index" not in st.session_state:
         st.session_state.article_index = 0
 
+    articles_num = len(articles)
     index = st.session_state.article_index
 
+    st.text(f"{index}/{articles_num}")
+
     left, _, right = st.columns([0.1, 1, 0.1])
-    if index < len(articles):
+    if index < articles_num:
         right.button(":arrow_forward:", on_click=_iterate_index, args=[1])
     if index > 0:
         left.button(":arrow_backward:", on_click=_iterate_index, args=[-1])

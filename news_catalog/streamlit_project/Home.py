@@ -10,7 +10,7 @@ from streamlit_utils import (
 st.set_page_config(
     page_title="News Catalog",
     page_icon=":book:",
-    layout="centered",  # centered/wide
+    layout="wide",  # centered/wide
 )
 
 st.title(":book: News Catalog")
