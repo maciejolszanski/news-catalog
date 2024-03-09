@@ -340,3 +340,25 @@ def navigate_articles(articles: pd.DataFrame) -> int:
         left.button(":arrow_backward:", on_click=_iterate_index, args=[-1])
 
     return index
+
+
+def create_sorted_articles_df(
+    mongodb_items: list, column_name: str, ascending=True
+) -> pd.DataFrame:
+    """Create DataFrame sorted by date in descending order.
+
+    Args:
+        mongodb_items (list): List of MongoDB documents.
+        column_name (str): Name of column to sort by.
+
+    Returns:
+        pd.DataFrame: Articles DataFrame sorted by date in descending order.
+    """
+    indices = list(range(len(mongodb_items)))
+    all_articles = pd.DataFrame(mongodb_items, index=indices)
+    all_articles_sorted = all_articles.sort_values(
+        column_name, ascending=ascending
+    )
+    all_articles_sorted.reset_index(drop=True, inplace=True)
+
+    return all_articles_sorted
