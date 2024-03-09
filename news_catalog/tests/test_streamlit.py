@@ -4,6 +4,7 @@ from news_catalog.streamlit_project.streamlit_utils import (
     _convert_columns_to_datetime,
     get_all_unique_tags,
     get_article_tags,
+    create_sorted_articles_df,
 )
 
 
@@ -55,3 +56,43 @@ def test_get_article_tags():
     actual_output = get_article_tags(article)
 
     assert actual_output == ["tag1", "tag2", "tag3"]
+
+
+def test_create_sorted_articles_df_date_asc():
+    items = [
+        {"a": 5, "b": "x", "date": "2023-01-01"},
+        {"a": 2, "b": "b", "date": "2023-01-03"},
+        {"a": 4, "b": "a", "date": "2023-01-02"},
+    ]
+
+    expected_df = pd.DataFrame(
+        [
+            {"a": 5, "b": "x", "date": "2023-01-01"},
+            {"a": 4, "b": "a", "date": "2023-01-02"},
+            {"a": 2, "b": "b", "date": "2023-01-03"},
+        ]
+    )
+
+    actual_df = create_sorted_articles_df(items, "date")
+
+    assert pd.testing.assert_frame_equal(actual_df, expected_df) is None
+
+
+def test_create_sorted_articles_df_int_desc():
+    items = [
+        {"a": 1, "b": "x", "date": "2023-01-01"},
+        {"a": 2, "b": "b", "date": "2023-01-03"},
+        {"a": 4, "b": "a", "date": "2023-01-02"},
+    ]
+
+    expected_df = pd.DataFrame(
+        [
+            {"a": 4, "b": "a", "date": "2023-01-02"},
+            {"a": 2, "b": "b", "date": "2023-01-03"},
+            {"a": 1, "b": "x", "date": "2023-01-01"},
+        ]
+    )
+
+    actual_df = create_sorted_articles_df(items, "a", False)
+
+    assert pd.testing.assert_frame_equal(actual_df, expected_df) is None

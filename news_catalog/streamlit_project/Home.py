@@ -1,9 +1,9 @@
 import streamlit as st
-import pandas as pd
 from mongoDB_handler import MongoDBHandler
 from streamlit_utils import (
     display_dataframe_with_selections,
     display_selected_articles,
+    create_sorted_articles_df,
 )
 
 
@@ -19,7 +19,7 @@ settings = st.secrets["mongo"]
 mongodb = MongoDBHandler(mongoDB_settings=settings)
 items = mongodb.get_data()
 
-articles = pd.DataFrame(items, index=list(range(len(items))))
+articles = create_sorted_articles_df(items, "date", False)
 
 column_config = {
     "_id": None,
