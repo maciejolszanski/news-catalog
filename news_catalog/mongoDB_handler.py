@@ -93,3 +93,8 @@ class MongoDBHandler:
             max_date = max_date.strftime("%Y-%m-%d")
 
         return max_date
+
+    def update_item(self, item_id, field, value):
+        self.collection.update_one({"_id": item_id}, {"$set": {field: value}})
+
+        return self.collection.find({"_id": item_id})

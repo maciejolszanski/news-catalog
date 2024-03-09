@@ -1,6 +1,6 @@
 # NEWS CATALOG
 
-News Catalog is a project that will help you stay informed and filer out
+News Catalog is a project that will help you stay informed and filter out
 rubbish articles. Thanks to it you will be able to read all news
 (integrated from multiple websites) from Poland in single app.
 
@@ -12,6 +12,6 @@ rubbish articles. Thanks to it you will be able to read all news
 
 
 # Run app:
-1. Run app: `python .\news-catalog\main.py` from main project directory
+1. Run app: `python news_catalog` from main project directory
 2. At first the webscraping will be run.
 3. Then the Streamlit app will be opened in your default bowser.
