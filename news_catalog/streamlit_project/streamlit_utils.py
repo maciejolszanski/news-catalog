@@ -206,6 +206,10 @@ def display_article_text(article: dict) -> None:
     st.caption(f"{article['author']}, {article['date']}")
     st.write(article["lead"])
     st.write(article["text"])
+    st.caption(f"Read the original article: {article['url']}")
+
+    article_tags = get_article_tags(article)
+    display_article_tags(article_tags)
 
 
 def display_article_tags(article_tags: list) -> None:
@@ -229,11 +233,9 @@ def display_selected_articles(
 
     for article in selected_articles.values():
         display_article_text(article)
-        article_tags = get_article_tags(article)
-        display_article_tags(article_tags)
 
         if assign_tags:
-            edit_tags(article, all_tags, article_tags, mongo_db)
+            edit_tags(article, all_tags, get_article_tags(article), mongo_db)
 
 
 def edit_tags(article, known_tags, article_tags, mongo_db):
