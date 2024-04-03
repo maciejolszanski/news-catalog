@@ -161,3 +161,6 @@ cython_debug/
 
 # Streamlit secrets
 .streamlit
+
+# Scripts secrets
+scripts/scripts_secrets.json
