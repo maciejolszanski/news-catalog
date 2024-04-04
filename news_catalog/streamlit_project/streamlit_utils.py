@@ -290,7 +290,7 @@ def edit_tags(article, known_tags, article_tags, mongo_db):
     st.button(
         label="Save Tags",
         key=f"{article['_id']}_button",
-        on_click=_update_tags,
+        on_click=_update_tags_manually,
         kwargs=kwargs_to_save_tags,
     )
 
@@ -306,14 +306,29 @@ def add_new_tag(text_input_key: str, **update_tags_kwargs) -> None:
     tags_to_assign = update_tags_kwargs.get("tags", []) + new_tags
     update_tags_kwargs.update({"tags": tags_to_assign})
 
-    _update_tags(**update_tags_kwargs)
+    _update_tags_manually(**update_tags_kwargs)
     st.session_state[text_input_key] = ""
 
 
-def _update_tags(mongo_db, article_id: str, tags: list):
-    """Save tags selected in multiselect field to mongodb."""
+def _update_tags_manually(mongo_db, article_id: str, tags: list):
+    """Save tags selected in multiselect field to mongodb.
+
+    Function saves selected tags as 'tags' field for mongodb document
+    specified by article_id. Tags are saved only if 'tags' argument is a list.
+    Additionaly if a list is not empty 'manually_assigned_tags' field
+    is set to True, otherwise it's set to False.
+    """
     if isinstance(tags, list):
+        manually_assigned = True
+
+        if len(tags) == 0:
+            tags = None
+            manually_assigned = False
+
         mongo_db.update_item(ObjectId(article_id), "tags", tags)
+        mongo_db.update_item(
+            ObjectId(article_id), "manually_assigned_tags", manually_assigned
+        )
 
 
 def navigate_articles(articles: pd.DataFrame) -> int:
