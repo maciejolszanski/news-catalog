@@ -194,7 +194,9 @@ def get_all_unique_tags(articles: pd.DataFrame) -> list:
 def get_article_tags(article: dict) -> list:
     """Get list of article tags."""
     article_tags = article.get("tags", [])
-    if article_tags is None:
+    null_values = [None, np.nan]
+
+    if article_tags in null_values:
         article_tags = []
 
     return article_tags
