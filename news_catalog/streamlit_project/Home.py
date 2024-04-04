@@ -29,7 +29,7 @@ column_config = {
     "text": None,
     "author": "Author",
     "url": None,
-    "tags": "Tags",
+    "tags": st.column_config.ListColumn("Tags", width="large"),
     "manually_assigned_tags": None,
 }
 
