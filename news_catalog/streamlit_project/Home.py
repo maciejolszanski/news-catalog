@@ -30,6 +30,7 @@ column_config = {
     "author": "Author",
     "url": None,
     "tags": "Tags",
+    "manually_assigned_tags": None,
 }
 
 selected_articles = display_dataframe_with_selections(articles, column_config)
