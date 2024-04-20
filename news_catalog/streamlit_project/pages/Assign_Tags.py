@@ -22,7 +22,7 @@ st.write(
     + "articles with no tags assigned. Keep working :wink:"
 )
 
-index = navigate_articles(articles_no_tags)
+index = navigate_articles(all_articles)
 
 articles_no_tags_df.reset_index(inplace=True)
 article = {index: all_articles.loc[index].to_dict()}

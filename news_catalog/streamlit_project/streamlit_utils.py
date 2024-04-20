@@ -344,21 +344,53 @@ def navigate_articles(articles: pd.DataFrame) -> int:
     def _iterate_index(value):
         st.session_state.article_index += value
 
+    def _set_index(value):
+        st.session_state.article_index = value
+
     if "article_index" not in st.session_state:
         st.session_state.article_index = 0
 
     articles_num = len(articles)
     index = st.session_state.article_index
 
-    st.text(f"{index}/{articles_num}")
+    index = select_article_index(index, articles_num)
+    _set_index(index)
 
     left, _, right = st.columns([0.1, 1, 0.1])
-    if index < articles_num:
+    if index < (articles_num - 1):
         right.button(":arrow_forward:", on_click=_iterate_index, args=[1])
     if index > 0:
         left.button(":arrow_backward:", on_click=_iterate_index, args=[-1])
 
     return index
+
+
+def select_article_index(current_index, articles_number):
+    """Display field to select article by index."""
+    left, middle_l, middle_r, _ = st.columns([0.1, 0.06, 0.08, 0.9])
+    left.write("Current article:")
+
+    selected_number = middle_l.text_input(
+        label="Article index selection",
+        label_visibility="collapsed",
+        placeholder=current_index + 1,
+    )
+
+    middle_r.write(f"/ {articles_number}")
+
+    if selected_number == "":
+        return current_index
+    else:
+        selected_number = int(selected_number)
+
+    if selected_number < 1:
+        new_index = 0
+    elif selected_number > 4014:
+        new_index = 4013
+    else:
+        new_index = selected_number - 1
+
+    return new_index
 
 
 def create_sorted_articles_df(
