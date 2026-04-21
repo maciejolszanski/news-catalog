@@ -36,9 +36,9 @@ Gitflow will be used. Main branch contains only released code. Develop branch co
 - [x] Implement duplicate removal in pipeline.
 
 ### Phase 2: Dependency Management (uv)
-- [ ] Initialize project with `uv`.
-- [ ] Migrate `requirements.txt` to `pyproject.toml` managed by `uv`.
-- [ ] Set up `uv` lockfile and environment.
+- [x] Initialize project with `uv`.
+- [x] Migrate `requirements.txt` to `pyproject.toml` managed by `uv`.
+- [x] Set up `uv` lockfile and environment.
 
 ### Phase 3: Decoupling & Abstraction
 - [ ] Define Python Protocols/Interfaces for Data Access (Repository Pattern).
