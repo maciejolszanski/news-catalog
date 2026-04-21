@@ -8,30 +8,44 @@
 5. There are tags assigned to newses based on their content
 6. Newses can be marked by user as interesting/not interesting
 7. Newses probability to be interesting for specific user is evaluated - based on that only possibly interesting newses are recommended to user, but he/she can see all newses
+8. **Initial Scraping**: On the first run (empty database), the system should only fetch articles from the last 2 days to avoid overloading.
+
+## Architecture: Data Abstraction Layer
+To ensure the UI remains decoupled from the storage implementation, the project uses an **Interface-based Abstraction Layer**:
+1. **Interfaces**: Define standard protocols (e.g., `NewsRepository`) for data access.
+2. **Implementation**: Specific handlers (like `MongoDBHandler`) implement these interfaces.
+3. **Frontend**: Streamlit interacts only with the interfaces, allowing for easy swapping of the underlying database (e.g., to PostgreSQL or a Mock DB for testing).
 
 ## Development flow
 Gitflow will be used. Main branch contains only released code. Develop branch contains code that is being developed currently. Feature branches are merged to develop. There is no need of using release branches.
 
 ## Technologies used
-Main app language is Python. Data are scraped using scrapy module. Data are stored as MondoDB documents. App UI is created in Python as Desktop app.
+* **Core**: Python
+* **Scraping**: Scrapy
+* **Storage**: MongoDB (accessed via Abstraction Layer)
+* **UI**: Streamlit
+* **Data Processing**: Pandas
 
-## Scrapy with MongoDB - [example](https://realpython.com/web-scraping-with-scrapy-and-mongodb/)
-Tasks:
-1. Specify Scraped Data Sctructure in `items.py` in `scrapy_project` directory.
-2. [DONE] ~~Create Scrapy spider~~
-3. Parse scraped data to created Item
-4. Set MondoDB database parameters in `setting.py`
-5. Create pipeline to connect spider and database
+## Project Progress & Roadmap
 
-## UI - Streamlit - [example](https://docs.streamlit.io/knowledge-base/tutorials/databases/mongodb)
-Tasks:
-1. Create "hello world" Streamlit app
-2. Add mongoDB secrets to Streamlit `secrets.toml` and add it to .gitignore
-3. Copy app secrets to the cloud
-4. Update Streamlit app to display Newses:
-   * Filtering newses (date, author, webiste, tags)
-   * Possibility to mark news as interesting/not interesting
+### Phase 1: Foundation (Scrapy & MongoDB)
+- [x] Specify Scraped Data Structure in `items.py`.
+- [x] Create Scrapy spider for WP.
+- [x] Create initial `MongoDBHandler`.
+- [x] Create pipeline to connect spider and database with watermark logic.
+- [x] Implement duplicate removal in pipeline.
 
-## Open questions:
-1. Maybe there should be not a pipeline that connects spider with mongoDB, but there should be another layer - API that will enale connection with db - it will be easier for Streamlit to read and modify these data?
-   
+### Phase 2: Decoupling & Abstraction
+- [ ] Define Python Protocols/Interfaces for Data Access (Repository Pattern).
+- [ ] Refactor `MongoDBHandler` to implement these interfaces.
+- [ ] Update Streamlit to use the Interface instead of `MongoDBHandler` directly.
+
+### Phase 3: Scalability & Performance
+- [ ] Implement Pagination in the Interface and MongoDB implementation.
+- [ ] Update UI to load data lazily/in chunks.
+- [ ] Separate scraping process from UI startup (background/scheduled tasks).
+
+### Phase 4: Enhancements
+- [ ] Implement AI-based tagging/topic extraction.
+- [ ] Implement user preference evaluation (Recommendation system).
+- [ ] Expand scraping to multiple news websites.
