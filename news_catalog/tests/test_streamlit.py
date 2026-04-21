@@ -22,7 +22,7 @@ def test_convert_columns_to_datetime():
 
     assert pd.api.types.is_datetime64_any_dtype(actual_output.date)
     assert pd.api.types.is_integer_dtype(actual_output.id)
-    assert pd.api.types.is_object_dtype(actual_output.x)
+    assert pd.api.types.is_object_dtype(actual_output.x) or pd.api.types.is_string_dtype(actual_output.x)
 
 
 def test_get_all_unique_tags_with_nones():

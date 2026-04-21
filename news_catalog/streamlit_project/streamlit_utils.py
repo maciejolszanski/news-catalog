@@ -6,6 +6,7 @@ import numpy as np
 from pandas.api.types import (
     is_datetime64_any_dtype,
     is_object_dtype,
+    is_string_dtype,
 )
 
 
@@ -65,7 +66,7 @@ def _convert_columns_to_datetime(df, columns):
         columns (list): List of columns name to be checked and coverted.
     """
     for col in columns:
-        if is_object_dtype(df[col]):
+        if is_object_dtype(df[col]) or is_string_dtype(df[col]):
             try:
                 df[col] = pd.to_datetime(df[col], format="%Y-%m-%d")
             except ValueError:
