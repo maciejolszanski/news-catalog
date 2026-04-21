@@ -35,17 +35,22 @@ Gitflow will be used. Main branch contains only released code. Develop branch co
 - [x] Create pipeline to connect spider and database with watermark logic.
 - [x] Implement duplicate removal in pipeline.
 
-### Phase 2: Decoupling & Abstraction
+### Phase 2: Dependency Management (uv)
+- [ ] Initialize project with `uv`.
+- [ ] Migrate `requirements.txt` to `pyproject.toml` managed by `uv`.
+- [ ] Set up `uv` lockfile and environment.
+
+### Phase 3: Decoupling & Abstraction
 - [ ] Define Python Protocols/Interfaces for Data Access (Repository Pattern).
 - [ ] Refactor `MongoDBHandler` to implement these interfaces.
 - [ ] Update Streamlit to use the Interface instead of `MongoDBHandler` directly.
 
-### Phase 3: Scalability & Performance
+### Phase 4: Scalability & Performance
 - [ ] Implement Pagination in the Interface and MongoDB implementation.
 - [ ] Update UI to load data lazily/in chunks.
 - [ ] Separate scraping process from UI startup (background/scheduled tasks).
 
-### Phase 4: Enhancements
+### Phase 5: Enhancements
 - [ ] Implement AI-based tagging/topic extraction.
 - [ ] Implement user preference evaluation (Recommendation system).
 - [ ] Expand scraping to multiple news websites.
